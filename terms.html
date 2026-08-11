@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yukon — Terms of Service</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Legal page layout ─────────────────────────────────── */
+    .legal-hero {
+      padding: clamp(48px, 5.556vw, 80px) var(--gutter) clamp(32px, 3.333vw, 48px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .legal-eyebrow {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-title {
+      font-family: 'Zalando Sans SemiExpanded', sans-serif;
+      font-size: clamp(28px, 3.889vw, 56px);
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--white);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-meta {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Two-column body: TOC left, content right ──────────── */
+    .legal-wrap {
+      display: grid;
+      grid-template-columns: clamp(160px, 16.667vw, 240px) 1fr;
+      gap: 0;
+      padding: 0 var(--gutter);
+      align-items: start;
+      position: relative;
+    }
+    .legal-wrap::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--gutter) + clamp(160px, 16.667vw, 240px));
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+      pointer-events: none;
+    }
+
+    /* TOC sidebar */
+    .legal-toc {
+      position: sticky;
+      top: clamp(32px, 3.333vw, 48px);
+      padding: clamp(32px, 3.333vw, 48px) clamp(16px, 1.667vw, 24px) clamp(32px, 3.333vw, 48px) 0;
+    }
+    .legal-toc-heading {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(9px, 0.694vw, 10px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(8px, 0.694vw, 10px);
+    }
+    .legal-toc-list a {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.764vw, 11px);
+      line-height: 1.4;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .legal-toc-list a:hover { color: var(--yellow); }
+
+    /* Content area */
+    .legal-content {
+      padding: clamp(32px, 3.333vw, 48px) 0 clamp(32px, 3.333vw, 48px) clamp(32px, 3.333vw, 48px);
+      max-width: clamp(520px, 55vw, 800px);
+    }
+
+    .legal-section {
+      padding-bottom: clamp(32px, 3.333vw, 48px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: clamp(32px, 3.333vw, 48px);
+    }
+    .legal-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .legal-section-title {
+      font-family: 'Zalando Sans SemiExpanded', sans-serif;
+      font-size: clamp(16px, 1.667vw, 24px);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--yellow);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+
+    .legal-section-subtitle {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-top: clamp(16px, 1.389vw, 20px);
+      margin-bottom: clamp(6px, 0.556vw, 8px);
+    }
+
+    .legal-p {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: clamp(10px, 0.833vw, 12px);
+    }
+    .legal-p:last-child { margin-bottom: 0; }
+
+    .legal-ul {
+      margin: clamp(8px, 0.694vw, 10px) 0 clamp(10px, 0.833vw, 12px) clamp(16px, 1.389vw, 20px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(6px, 0.556vw, 8px);
+    }
+    .legal-ul li {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .legal-caps {
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      font-size: clamp(10px, 0.833vw, 12px);
+      line-height: 1.6;
+      letter-spacing: 0.01em;
+    }
+
+    .legal-address {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 2;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* Responsive */
+    @media (max-width: 760px) {
+      .legal-wrap { grid-template-columns: 1fr; padding: 0 clamp(20px, 4vw, 40px); }
+      .legal-wrap::before { display: none; }
+      .legal-toc { display: none; }
+      .legal-content { padding: clamp(24px, 4vw, 32px) 0; max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .legal-wrap { padding: 0 20px; }
+      .legal-hero { padding: clamp(32px, 7.467vw, 48px) 20px clamp(20px, 5.333vw, 28px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- vertical grid lines -->
+    <div class="grid-lines-overlay" aria-hidden="true">
+      <div class="grid-line-left"></div>
+      <div class="grid-line-right"></div>
+    </div>
+
+    <!-- ===== NAV ===== -->
+    <nav class="rule-bottom fade-in-nav">
+      <a href="index.html" class="nav-logo">Yukon</a>
+      <div class="nav-right">
+        <a href="index.html" class="btn btn-nav">Return to home</a>
+      </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <div class="legal-hero rule-bottom">
+      <p class="legal-eyebrow">Yukon · Eigen Labs, Inc.</p>
+      <h1 class="legal-title">Terms of Service</h1>
+      <p class="legal-meta">Effective: August 10, 2026</p>
+    </div>
+
+    <!-- ===== BODY ===== -->
+    <div class="legal-wrap">
+
+      <!-- TOC -->
+      <nav class="legal-toc" aria-label="Table of contents">
+        <p class="legal-toc-heading">Contents</p>
+        <ol class="legal-toc-list">
+          <li><a href="#intro">Introduction</a></li>
+          <li><a href="#s1">1. Eligibility</a></li>
+          <li><a href="#s2">2. What the Site Does</a></li>
+          <li><a href="#s3">3. Accounts</a></li>
+          <li><a href="#s4">4. Challenge Proposal</a></li>
+          <li><a href="#s5">5. Prohibited Conduct</a></li>
+          <li><a href="#s6">6. Intellectual Property</a></li>
+          <li><a href="#s7">7. Third-Party Links</a></li>
+          <li><a href="#s8">8. Disclaimers</a></li>
+          <li><a href="#s9">9. Limitation of Liability</a></li>
+          <li><a href="#s10">10. Governing Law</a></li>
+          <li><a href="#s11">11. Changes</a></li>
+          <li><a href="#s12">12. Contact</a></li>
+        </ol>
+      </nav>
+
+      <!-- Content -->
+      <div class="legal-content">
+
+        <div class="legal-section" id="intro">
+          <p class="legal-p">These Terms of Service ("Terms") are a legal agreement between you and Eigen Labs, Inc. ("Eigen Labs," "we," "us," or "our") governing your access to and use of the Yukon website at yukon.org (the "Site"), a directory of autoresearch challenges. These Terms govern the Site only.</p>
+          <div class="legal-section-subtitle">These Terms plus challenge-specific terms.</div>
+          <p class="legal-p">The Site lists autoresearch challenges (such as ECDSA.fail, OpenFrontierCS, and MLX.fast). In addition to these Terms, each challenge has its own additional Terms of Service and Privacy Policy covering matters specific to that challenge such as submissions, scoring, leaderboards, and prizes, which also apply once you participate in that challenge. Review the applicable challenge's additional terms before participating. Eigen Labs, Inc. currently designs, operates, and scores every challenge listed on the Site. If a challenge listed on the Site is instead operated by a third-party Organizer, that challenge's own terms will identify the Organizer, and Eigen Labs' role with respect to that challenge is limited to listing and hosting it on the Site. Eigen Labs is not a party to that Organizer's terms and is not responsible for that Organizer's challenge content.</p>
+          <p class="legal-p">By accessing or using the Site, you agree to these Terms and our Privacy Policy, which is incorporated by reference. If you do not agree, do not use the Site.</p>
+        </div>
+
+        <div class="legal-section" id="s1">
+          <h2 class="legal-section-title">1. Eligibility</h2>
+          <p class="legal-p">You may use the Site only if you are at least 13 years old (16 if you are in the EEA or UK) and your use complies with applicable law.</p>
+        </div>
+
+        <div class="legal-section" id="s2">
+          <h2 class="legal-section-title">2. What the Site Does</h2>
+          <p class="legal-p">The Site is a directory and informational hub for autoresearch challenges. It lists active and upcoming challenges, displays summary information sourced from those challenges (such as leaderboard excerpts), and provides a form for proposing new challenge ideas.</p>
+          <p class="legal-p">Information displayed about individual challenges (descriptions, leaderboard excerpts, status) is sourced from those challenges and provided for convenience. It may be delayed, incomplete, or out of date; the authoritative source is the challenge's own page.</p>
+        </div>
+
+        <div class="legal-section" id="s3">
+          <h2 class="legal-section-title">3. Accounts</h2>
+          <p class="legal-p">Clicking "Sign in with GitHub" creates a single Yukon account for you, using information GitHub provides (such as your email address, username, and avatar). This account is shared across every challenge page hosted within the Yukon app; signing in once signs you in across those pages. See our Privacy Policy for what account information we collect and how it is used.</p>
+          <p class="legal-p">You are responsible for all activity under your account. If you believe your account has been compromised, notify us immediately at notices@eigenlabs.org.</p>
+        </div>
+
+        <div class="legal-section" id="s4">
+          <h2 class="legal-section-title">4. Submitting a Challenge Proposal</h2>
+          <p class="legal-p">The Site includes a form ("Create Challenge") for proposing a problem for a possible future challenge. Submitting this form is not open registration and creates no challenge, account, or obligation on our part. We review submissions at our discretion and may follow up, decline, modify, or take no action on any proposal, without notice or explanation.</p>
+          <p class="legal-p">By submitting a proposal, you represent that: you have the right to submit the information and any linked materials; the submission does not disclose confidential, proprietary, or third-party information that you are not authorized to share; and the information you provide is accurate to the best of your knowledge.</p>
+          <div class="legal-section-subtitle">Do not submit anything you consider confidential.</div>
+          <p class="legal-p">Eigen Labs does not accept any confidentiality obligation with respect to information submitted through this form, and you should not include unpublished research, proprietary methods, or other sensitive information you are not comfortable having reviewed internally without a separate confidentiality agreement.</p>
+          <div class="legal-section-subtitle">License.</div>
+          <p class="legal-p">By submitting a proposal, you grant Eigen Labs a non-exclusive, royalty-free, worldwide license to review, evaluate, reproduce, and internally discuss the submission for the purpose of deciding whether to develop a challenge based on it. This license does not transfer ownership of any underlying research, methodology, or intellectual property described in your submission.</p>
+        </div>
+
+        <div class="legal-section" id="s5">
+          <h2 class="legal-section-title">5. Prohibited Conduct</h2>
+          <p class="legal-p">You may not:</p>
+          <ul class="legal-ul">
+            <li>Scrape, harvest, or systematically extract data from the Site beyond ordinary browsing.</li>
+            <li>Submit false, fraudulent, or misleading information through the Create Challenge form or otherwise.</li>
+            <li>Impersonate any person or entity.</li>
+            <li>Interfere with or disrupt the Site's operation.</li>
+            <li>Use the Site for any unlawful purpose.</li>
+          </ul>
+        </div>
+
+        <div class="legal-section" id="s6">
+          <h2 class="legal-section-title">6. Intellectual Property</h2>
+          <p class="legal-p">Eigen Labs and its licensors own the Site, including its design, text, and the Yukon name and logo. We grant you a limited, non-exclusive, revocable license to access the Site for personal, non-commercial informational purposes. Names, logos, and marks of listed challenges, and any partner or collaborator logos displayed on the Site, are the trademarks of their respective owners and are shown to identify our collaboration with them.</p>
+        </div>
+
+        <div class="legal-section" id="s7">
+          <h2 class="legal-section-title">7. Third-Party Links</h2>
+          <p class="legal-p">The Site links to challenge pages and, at times, to external resources (such as papers or repositories) submitted by others. Eigen Labs does not control and is not responsible for the content, terms, or practices of any linked challenge page operated by a third-party Organizer, or any other external site.</p>
+        </div>
+
+        <div class="legal-section" id="s8">
+          <h2 class="legal-section-title">8. Disclaimers</h2>
+          <p class="legal-p legal-caps">THE SITE IS PROVIDED "AS IS" AND "AS AVAILABLE." TO THE MAXIMUM EXTENT PERMITTED BY LAW, EIGEN LABS DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. EIGEN LABS DOES NOT WARRANT THAT INFORMATION DISPLAYED ABOUT ANY CHALLENGE IS ACCURATE, COMPLETE, OR CURRENT, OR THAT THE SITE WILL BE UNINTERRUPTED OR ERROR-FREE.</p>
+        </div>
+
+        <div class="legal-section" id="s9">
+          <h2 class="legal-section-title">9. Limitation of Liability</h2>
+          <p class="legal-p legal-caps">TO THE MAXIMUM EXTENT PERMITTED BY LAW, EIGEN LABS WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SITE. OUR AGGREGATE LIABILITY FOR ANY CLAIM ARISING FROM THE SITE WILL NOT EXCEED USD $100.</p>
+          <p class="legal-p">These limitations do not apply where prohibited by law.</p>
+        </div>
+
+        <div class="legal-section" id="s10">
+          <h2 class="legal-section-title">10. Governing Law and Disputes</h2>
+          <p class="legal-p">These Terms are governed by the laws of the State of New York, without regard to conflict-of-laws principles. Before filing any claim, you agree to contact us at notices@eigenlabs.org and attempt in good faith to resolve the dispute informally for 30 days. Any claim not resolved informally will be brought exclusively in the state or federal courts located in New York, New York, and you consent to that jurisdiction and venue.</p>
+        </div>
+
+        <div class="legal-section" id="s11">
+          <h2 class="legal-section-title">11. Changes to These Terms</h2>
+          <p class="legal-p">We may update these Terms from time to time. We will update the effective date above and, for material changes, provide notice on the Site. Continued use after the effective date constitutes acceptance.</p>
+        </div>
+
+        <div class="legal-section" id="s12">
+          <h2 class="legal-section-title">12. Contact</h2>
+          <p class="legal-address">
+            Eigen Labs, Inc.<br>
+            600 1st Ave Ste 330 # 926277<br>
+            Seattle, WA 98104-2246<br>
+            notices@eigenlabs.org
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="rule-top rule-bottom fade-in">
+      <div>
+        <a href="index.html" class="footer-logo">Yukon</a>
+      </div>
+      <div>
+        <p class="footer-col-heading">Connect</p>
+        <div class="footer-links">
+          <a href="https://x.com/yukonresearch" target="_blank" rel="noopener" class="footer-link">X</a>
+          <a href="https://github.com/Layr-Labs/yukon" target="_blank" rel="noopener" class="footer-link">Github</a>
+          <a href="https://join.slack.com/t/ecdsafail/shared_invite/zt-4667dhade-vm6H9hWQwSGxv8WnXYUlpQ" target="_blank" rel="noopener" class="footer-link">Slack</a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-heading">Legal</p>
+        <div class="footer-links">
+          <a href="terms.html" class="footer-link">Terms of Service</a>
+          <a href="privacy.html" class="footer-link">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+    <div class="footer-copy">Copyright © 2026 Eigen Labs, Inc.</div>
+
+  </div><!-- /page -->
+
+  <script>
+    const nav = document.querySelector('nav');
+    setTimeout(() => { nav.classList.add('rule-drawn'); }, 200);
+    const gridOverlay = document.querySelector('.grid-lines-overlay');
+    setTimeout(() => { gridOverlay.classList.add('grid-lines-drawn'); }, 350);
+    const ruleObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('rule-drawn');
+          ruleObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.rule-bottom, .rule-top').forEach(el => ruleObserver.observe(el));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

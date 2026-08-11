@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yukon — Tell us about your challenge</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+
+    <!-- vertical grid lines (same as landing page) -->
+    <div class="grid-lines-overlay" aria-hidden="true">
+      <div class="grid-line-left"></div>
+      <div class="grid-line-right"></div>
+    </div>
+
+    <!-- ===== NAV ===== -->
+    <nav class="rule-bottom fade-in-nav">
+      <a href="index.html" class="nav-logo">Yukon</a>
+      <div class="nav-right">
+        <a href="index.html" class="btn btn-nav">Return to home</a>
+      </div>
+    </nav>
+
+    <!-- ===== PARTICIPATE HERO ===== -->
+    <section class="participate-hero">
+      <h1 class="participate-title fade-in">Tell us about your challenge</h1>
+      <p class="participate-subtitle fade-in">We are shortlisting problems for upcoming challenges. Tell us about the problem or research objective and a member of our team will follow up. We are looking for candidates that are both important and unsolved with a hard, objective way to verify a result.</p>
+    </section>
+
+    <!-- ===== FORM ===== -->
+    <section class="form-wrap fade-in">
+      <form>
+        <!-- row 1: Name + Email -->
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="name">Name</label>
+            <input class="form-input" type="text" id="name" name="name" placeholder="Dr. Ada Lovelace">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-input" type="email" id="email" name="email" placeholder="you@university.edu">
+          </div>
+        </div>
+
+        <!-- row 2: Institution + Field -->
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="institution">Institution / Affiliation</label>
+            <input class="form-input" type="text" id="institution" name="institution" placeholder="Adam Mickiewicz University">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="field">Field</label>
+            <select class="form-select" id="field" name="field">
+              <option value="" disabled selected>Select a domain</option>
+              <option value="cs">Computer Science</option>
+              <option value="math">Mathematics</option>
+              <option value="physics">Physics</option>
+              <option value="biology">Biology</option>
+              <option value="chemistry">Chemistry</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- The problem -->
+        <div class="form-field form-field-full">
+          <label class="form-label" for="problem">The Problem — what's the goal metric, and why does it matter?</label>
+          <textarea class="form-textarea" id="problem" name="problem" placeholder="Describe the problem and the single continuous metric a solver would push."></textarea>
+        </div>
+
+        <!-- The verifier -->
+        <div class="form-field form-field-full">
+          <label class="form-label" for="verifier">The Verifier — how is a submission scored objectively?</label>
+          <textarea class="form-textarea" id="verifier" name="verifier" placeholder="Is there a deterministic way to check and score an answer? Link a repo or harness if one exists."></textarea>
+        </div>
+
+        <!-- Link -->
+        <div class="form-field form-field-full">
+          <label class="form-label" for="link">Link — optional (paper, repo, benchmark)</label>
+          <input class="form-input" type="url" id="link" name="link" placeholder="https://">
+        </div>
+
+        <!-- Submit -->
+        <div class="form-submit-wrap">
+          <button type="button" class="btn btn-yellow btn-submit" id="submit-btn" onclick="submitForm()">Submit</button>
+        </div>
+      </form>
+
+      <script>
+        function submitForm() {
+          const name        = document.getElementById('name').value.trim();
+          const email       = document.getElementById('email').value.trim();
+          const institution = document.getElementById('institution').value.trim();
+          const field       = document.getElementById('field').value.trim();
+          const problem     = document.getElementById('problem').value.trim();
+          const verifier    = document.getElementById('verifier').value.trim();
+          const link        = document.getElementById('link').value.trim();
+
+          const body = [
+            'Name: ' + (name || '—'),
+            'Email: ' + (email || '—'),
+            'Institution / Affiliation: ' + (institution || '—'),
+            'Field: ' + (field || '—'),
+            '',
+            'The Problem:',
+            problem || '—',
+            '',
+            'The Verifier:',
+            verifier || '—',
+            '',
+            'Link: ' + (link || '—'),
+          ].join('\n');
+
+          const mailto = 'mailto:autoresearch@eigenlabs.org'
+            + '?subject=' + encodeURIComponent('Yukon Problem Submission — ' + (name || 'Anonymous'))
+            + '&body='    + encodeURIComponent(body);
+
+          window.location.href = mailto;
+        }
+      </script>
+
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="rule-top rule-bottom fade-in">
+      <div>
+        <a href="index.html" class="footer-logo">Yukon</a>
+      </div>
+      <div>
+        <p class="footer-col-heading">Connect</p>
+        <div class="footer-links">
+          <a href="https://x.com/yukonresearch" target="_blank" rel="noopener" class="footer-link">X</a>
+          <a href="https://github.com/Layr-Labs/yukon" target="_blank" rel="noopener" class="footer-link">Github</a>
+          <a href="https://join.slack.com/t/ecdsafail/shared_invite/zt-4667dhade-vm6H9hWQwSGxv8WnXYUlpQ" target="_blank" rel="noopener" class="footer-link">Slack</a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-heading">Legal</p>
+        <div class="footer-links">
+          <a href="terms.html" class="footer-link">Terms of Service</a>
+          <a href="privacy.html" class="footer-link">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+    <div class="footer-copy">Copyright © 2026 Eigen Labs, Inc.</div>
+
+  </div><!-- /page -->
+
+  <script>
+    const nav = document.querySelector('nav');
+    setTimeout(() => { nav.classList.add('rule-drawn'); }, 200);
+
+    const gridOverlay = document.querySelector('.grid-lines-overlay');
+    setTimeout(() => { gridOverlay.classList.add('grid-lines-drawn'); }, 350);
+
+    const ruleObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('rule-drawn');
+          ruleObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    document.querySelectorAll('.rule-bottom, .rule-top').forEach(el => {
+      ruleObserver.observe(el);
+    });
+
+    const heroItems = document.querySelectorAll('.participate-hero .fade-in');
+    heroItems.forEach((el, i) => {
+      el.style.transitionDelay = (0.3 + i * 0.12) + 's';
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yukon — Privacy Policy</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Legal page layout (shared with terms.html) ─────────── */
+    .legal-hero {
+      padding: clamp(48px, 5.556vw, 80px) var(--gutter) clamp(32px, 3.333vw, 48px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .legal-eyebrow {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-title {
+      font-family: 'Zalando Sans SemiExpanded', sans-serif;
+      font-size: clamp(28px, 3.889vw, 56px);
+      font-weight: 400;
+      line-height: 1.05;
+      color: var(--white);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-meta {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.04em;
+    }
+    .legal-wrap {
+      display: grid;
+      grid-template-columns: clamp(160px, 16.667vw, 240px) 1fr;
+      gap: 0;
+      padding: 0 var(--gutter);
+      align-items: start;
+      position: relative;
+    }
+    .legal-wrap::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--gutter) + clamp(160px, 16.667vw, 240px));
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+      pointer-events: none;
+    }
+    .legal-toc {
+      position: sticky;
+      top: clamp(32px, 3.333vw, 48px);
+      padding: clamp(32px, 3.333vw, 48px) clamp(16px, 1.667vw, 24px) clamp(32px, 3.333vw, 48px) 0;
+    }
+    .legal-toc-heading {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(9px, 0.694vw, 10px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(8px, 0.694vw, 10px);
+    }
+    .legal-toc-list a {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.764vw, 11px);
+      line-height: 1.4;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .legal-toc-list a:hover { color: var(--yellow); }
+    .legal-content {
+      padding: clamp(32px, 3.333vw, 48px) 0 clamp(32px, 3.333vw, 48px) clamp(32px, 3.333vw, 48px);
+      max-width: clamp(520px, 55vw, 800px);
+    }
+    .legal-section {
+      padding-bottom: clamp(32px, 3.333vw, 48px);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: clamp(32px, 3.333vw, 48px);
+    }
+    .legal-section:last-child { border-bottom: none; margin-bottom: 0; }
+    .legal-section-title {
+      font-family: 'Zalando Sans SemiExpanded', sans-serif;
+      font-size: clamp(16px, 1.667vw, 24px);
+      font-weight: 400;
+      line-height: 1.15;
+      color: var(--yellow);
+      margin-bottom: clamp(12px, 1.111vw, 16px);
+    }
+    .legal-section-subtitle {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(10px, 0.833vw, 12px);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-top: clamp(16px, 1.389vw, 20px);
+      margin-bottom: clamp(6px, 0.556vw, 8px);
+    }
+    .legal-p {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: clamp(10px, 0.833vw, 12px);
+    }
+    .legal-p:last-child { margin-bottom: 0; }
+    .legal-ul {
+      margin: clamp(8px, 0.694vw, 10px) 0 clamp(10px, 0.833vw, 12px) clamp(16px, 1.389vw, 20px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(6px, 0.556vw, 8px);
+    }
+    .legal-ul li {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.75);
+    }
+    .legal-address {
+      font-family: 'ABC Repro Variable', monospace;
+      font-size: clamp(11px, 0.972vw, 14px);
+      line-height: 2;
+      color: rgba(255,255,255,0.75);
+    }
+    @media (max-width: 760px) {
+      .legal-wrap { grid-template-columns: 1fr; padding: 0 clamp(20px, 4vw, 40px); }
+      .legal-wrap::before { display: none; }
+      .legal-toc { display: none; }
+      .legal-content { padding: clamp(24px, 4vw, 32px) 0; max-width: 100%; }
+    }
+    @media (max-width: 600px) {
+      .legal-wrap { padding: 0 20px; }
+      .legal-hero { padding: clamp(32px, 7.467vw, 48px) 20px clamp(20px, 5.333vw, 28px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="grid-lines-overlay" aria-hidden="true">
+      <div class="grid-line-left"></div>
+      <div class="grid-line-right"></div>
+    </div>
+
+    <!-- ===== NAV ===== -->
+    <nav class="rule-bottom fade-in-nav">
+      <a href="index.html" class="nav-logo">Yukon</a>
+      <div class="nav-right">
+        <a href="index.html" class="btn btn-nav">Return to home</a>
+      </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <div class="legal-hero rule-bottom">
+      <p class="legal-eyebrow">Yukon · Eigen Labs, Inc.</p>
+      <h1 class="legal-title">Privacy Policy</h1>
+      <p class="legal-meta">Effective: August 10, 2026</p>
+    </div>
+
+    <!-- ===== BODY ===== -->
+    <div class="legal-wrap">
+
+      <!-- TOC -->
+      <nav class="legal-toc" aria-label="Table of contents">
+        <p class="legal-toc-heading">Contents</p>
+        <ol class="legal-toc-list">
+          <li><a href="#intro">Introduction</a></li>
+          <li><a href="#s1">1. Information We Collect</a></li>
+          <li><a href="#s2">2. How We Use Information</a></li>
+          <li><a href="#s3">3. How We Disclose</a></li>
+          <li><a href="#s4">4. Legal Bases</a></li>
+          <li><a href="#s5">5. Retention</a></li>
+          <li><a href="#s6">6. International Transfers</a></li>
+          <li><a href="#s7">7. Your Privacy Rights</a></li>
+          <li><a href="#s8">8. Children's Privacy</a></li>
+          <li><a href="#s9">9. Changes</a></li>
+          <li><a href="#s10">10. Contact</a></li>
+        </ol>
+      </nav>
+
+      <!-- Content -->
+      <div class="legal-content">
+
+        <div class="legal-section" id="intro">
+          <p class="legal-p">This Privacy Policy explains how Eigen Labs, Inc. ("Eigen Labs," "we," "us," or "our") collects, uses, and discloses personal information in connection with the Yukon website at yukon.org (the "Site"). This policy covers the Site only.</p>
+          <div class="legal-section-subtitle">This Policy plus challenge-specific policies.</div>
+          <p class="legal-p">The Site lists autoresearch challenges (such as ECDSA.fail, OpenFrontierCS, and MLX.fast). In addition to this Privacy Policy, each challenge has its own additional Privacy Policy covering challenge-specific data practices (such as leaderboard or trace data), which also applies once you participate in that challenge. This policy covers the Yukon account described below, which is shared across every challenge page within the Yukon app.</p>
+        </div>
+
+        <div class="legal-section" id="s1">
+          <h2 class="legal-section-title">1. Information We Collect</h2>
+          <div class="legal-section-subtitle">Account and identity.</div>
+          <p class="legal-p">When you sign in with GitHub, we receive from GitHub (via Supabase OAuth): your email address, GitHub username, and GitHub avatar URL. We generate and store an internal account identifier (UUID) for your account. We do not store your GitHub numeric user ID or GitHub OAuth access token. Signing in once signs you in on every challenge you participate in.</p>
+          <div class="legal-section-subtitle">Challenge proposal data.</div>
+          <p class="legal-p">If you use the "Create Challenge" form, we collect your name, email address, institution or affiliation, selected field/domain, your written description of the proposed problem and how it would be verified, and any optional link you provide.</p>
+          <div class="legal-section-subtitle">Technical and log data.</div>
+          <p class="legal-p">Our hosting provider automatically logs standard request data (such as IP address, browser/user agent, page requested, and timestamp) for security and operational purposes.</p>
+          <div class="legal-section-subtitle">Cookies and analytics.</div>
+          <p class="legal-p">Supabase sets an HttpOnly, Secure cookie to keep you signed in across the Site and its challenge pages. We use Google Analytics, with IP anonymization, to understand aggregate Site usage (such as pages visited and general traffic patterns). We do not use advertising or retargeting cookies or cross-site tracking on the Site.</p>
+        </div>
+
+        <div class="legal-section" id="s2">
+          <h2 class="legal-section-title">2. How We Use Information</h2>
+          <p class="legal-p">We use this information to authenticate you across the Site and its challenge pages; to evaluate challenge proposals and follow up with submitters; to operate, secure, and improve the Site; and to understand aggregate usage.</p>
+        </div>
+
+        <div class="legal-section" id="s3">
+          <h2 class="legal-section-title">3. How We Disclose Information</h2>
+          <p class="legal-p">The Site runs on the same infrastructure stack as our other challenge pages. Please review the Privacy Policy of the respective challenge page for more detail. We do not sell personal information.</p>
+        </div>
+
+        <div class="legal-section" id="s4">
+          <h2 class="legal-section-title">4. Legal Bases (EU/UK Users)</h2>
+          <p class="legal-p">If you are in the EEA or UK, we process your personal data based on: legitimate interests (operating the Site, evaluating proposals, security); consent (analytics cookies, to the extent required); and legal obligation, where applicable.</p>
+        </div>
+
+        <div class="legal-section" id="s5">
+          <h2 class="legal-section-title">5. Retention</h2>
+          <p class="legal-p">We retain account and identity data for the life of your account plus a reasonable period after deletion. We retain challenge proposal data for as long as reasonably needed to evaluate the proposal and follow up, and thereafter as needed to comply with legal obligations. Technical logs are retained for a reasonable operational and security period.</p>
+          <p class="legal-p">To request deletion of your Yukon account, contact us at notices@eigenlabs.org. We will respond within 30 days. Deleting your Yukon account may affect your ability to sign in to challenge pages; any data already collected by a specific challenge (such as leaderboard or trace data) is subject to that challenge's own Privacy Policy and retention terms.</p>
+        </div>
+
+        <div class="legal-section" id="s6">
+          <h2 class="legal-section-title">6. International Transfers</h2>
+          <p class="legal-p">Eigen Labs is based in the United States. If you are in the EEA or UK, your personal data may be transferred to and processed in the US. We rely on Standard Contractual Clauses and the UK IDTA or UK Addendum, as applicable.</p>
+        </div>
+
+        <div class="legal-section" id="s7">
+          <h2 class="legal-section-title">7. Your Privacy Rights</h2>
+          <p class="legal-p">EU/UK (GDPR/UK GDPR): you have rights of access, rectification, erasure, restriction, portability, and objection. California (CCPA/CPRA): you have the right to know, delete, correct, and opt out of the sale or sharing of personal information; we do not sell or share personal information. To exercise any of these rights, contact us at notices@eigenlabs.org. We will respond within 30 days (45 days for California requests).</p>
+        </div>
+
+        <div class="legal-section" id="s8">
+          <h2 class="legal-section-title">8. Children's Privacy</h2>
+          <p class="legal-p">The Site is not directed to children under 13 (or under 16 in the EEA/UK). We do not knowingly collect personal information from children.</p>
+        </div>
+
+        <div class="legal-section" id="s9">
+          <h2 class="legal-section-title">9. Changes to This Policy</h2>
+          <p class="legal-p">We may update this policy from time to time. We will update the effective date above and, for material changes, provide notice on the Site.</p>
+        </div>
+
+        <div class="legal-section" id="s10">
+          <h2 class="legal-section-title">10. Contact</h2>
+          <p class="legal-address">
+            Eigen Labs, Inc.<br>
+            600 1st Ave Ste 330 # 926277<br>
+            Seattle, WA 98104-2246<br>
+            notices@eigenlabs.org
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="rule-top rule-bottom fade-in">
+      <div>
+        <a href="index.html" class="footer-logo">Yukon</a>
+      </div>
+      <div>
+        <p class="footer-col-heading">Connect</p>
+        <div class="footer-links">
+          <a href="https://x.com/yukonresearch" target="_blank" rel="noopener" class="footer-link">X</a>
+          <a href="https://github.com/Layr-Labs/yukon" target="_blank" rel="noopener" class="footer-link">Github</a>
+          <a href="https://join.slack.com/t/ecdsafail/shared_invite/zt-4667dhade-vm6H9hWQwSGxv8WnXYUlpQ" target="_blank" rel="noopener" class="footer-link">Slack</a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-col-heading">Legal</p>
+        <div class="footer-links">
+          <a href="terms.html" class="footer-link">Terms of Service</a>
+          <a href="privacy.html" class="footer-link">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
+    <div class="footer-copy">Copyright © 2026 Eigen Labs, Inc.</div>
+
+  </div><!-- /page -->
+
+  <script>
+    const nav = document.querySelector('nav');
+    setTimeout(() => { nav.classList.add('rule-drawn'); }, 200);
+    const gridOverlay = document.querySelector('.grid-lines-overlay');
+    setTimeout(() => { gridOverlay.classList.add('grid-lines-drawn'); }, 350);
+    const ruleObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('rule-drawn');
+          ruleObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.rule-bottom, .rule-top').forEach(el => ruleObserver.observe(el));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
