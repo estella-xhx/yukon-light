@@ -155,7 +155,14 @@ input[type="file"] { display: none; }
         <img id="logoThumb" class="logo-thumb" style="display:none">
       </div>
       <input type="file" id="logoFile" accept="image/*">
-      <button id="logoRemove" onclick="removeCollabLogo()" style="display:none;margin-top:5px;padding:4px 10px;font-size:11px;border:1px solid #c00;color:#c00;background:none;border-radius:3px;cursor:pointer;">Remove logo</button>
+      <div id="logoControls" style="display:none;margin-top:7px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:rgba(25,6,141,0.5);white-space:nowrap;">Logo size</span>
+          <input type="range" id="logoScale" min="50" max="300" value="100" step="5" style="flex:1;" oninput="document.getElementById('logoScaleVal').textContent=this.value+'%';rerender()">
+          <span id="logoScaleVal" style="font-size:10px;color:rgba(25,6,141,0.5);width:32px;">100%</span>
+        </div>
+        <button id="logoRemove" onclick="removeCollabLogo()" style="margin-top:5px;padding:4px 10px;font-size:11px;border:1px solid #c00;color:#c00;background:none;border-radius:3px;cursor:pointer;">Remove logo</button>
+      </div>
     </div>
   </div>
 
@@ -586,9 +593,10 @@ function renderBanner(canvas, layout, content, s) {
 
     if (collabImg) {
       // Logo sits inline after the label, vertically centred on the same baseline
-      const labelW = ctx.measureText(label).width;
-      const gap    = 12 * s;
-      let lh = coSz * 1.7 * s;
+      const labelW    = ctx.measureText(label).width;
+      const gap       = 12 * s;
+      const logoScale = (parseFloat(document.getElementById('logoScale').value) || 100) / 100;
+      let lh = coSz * 1.7 * s * logoScale;
       let lw = collabImg.naturalWidth * (lh / collabImg.naturalHeight);
       if (lw < 100 * s) { lw = 100 * s; lh = collabImg.naturalHeight * (lw / collabImg.naturalWidth); }
       const lx = coTxtX + labelW + gap;
@@ -1064,7 +1072,7 @@ document.getElementById('logoFile').addEventListener('change', e => {
       const thumb = document.getElementById('logoThumb');
       thumb.src = ev.target.result; thumb.style.display = 'block';
       document.getElementById('logoLabel').textContent = file.name;
-      document.getElementById('logoRemove').style.display = 'block';
+      document.getElementById('logoControls').style.display = 'block';
       rerender();
     };
     img.src = ev.target.result;
@@ -1077,7 +1085,9 @@ function removeCollabLogo() {
   document.getElementById('logoFile').value = '';
   document.getElementById('logoThumb').style.display = 'none';
   document.getElementById('logoLabel').textContent = 'Click to upload';
-  document.getElementById('logoRemove').style.display = 'none';
+  document.getElementById('logoControls').style.display = 'none';
+  document.getElementById('logoScale').value = '100';
+  document.getElementById('logoScaleVal').textContent = '100%';
   rerender();
 }
 
