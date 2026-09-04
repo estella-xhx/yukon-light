@@ -271,10 +271,10 @@ function generateLayout(szId) {
   const PAD = 48;
 
   const TS = szId === 'wide'
-    ? { hl: 90,  sh: 36, sm: 24, co: 20, wm: 39 }
+    ? { hl: 90,  sh: 30, sm: 24, co: 20, wm: 39 }
     : szId === 'square'
-    ? { hl: 108, sh: 43, sm: 24, co: 23, wm: 49 }
-    : { hl: 100, sh: 40, sm: 24, co: 23, wm: 45 };
+    ? { hl: 108, sh: 30, sm: 24, co: 23, wm: 49 }
+    : { hl: 100, sh: 30, sm: 24, co: 23, wm: 45 };
 
   const sbSide  = pick(['left', 'right']);
   const ctaSide = pick(['top', 'bottom']);
@@ -311,7 +311,7 @@ function generateLayout(szId) {
   const textBlockMinH = Math.ceil(
     PAD + TS.hl * 0.75
     + TS.hl * 1.08 * 2
-    + 30
+    + 32
     + TS.sh * 1.2 * 2
     + 24
   );
@@ -408,7 +408,7 @@ function generateLayout(szId) {
   const coTileW = emInRight ? sbW : hlW;
 
   // ── Text positioning ───────────────────────────────────────────────────────────
-  const textEndFromBase = TS.hl * 1.08 * 2 + 30 + TS.sh * 1.2 * 2 + 24;
+  const textEndFromBase = TS.hl * 1.08 * 2 + 32 + TS.sh * 1.2 * 2 + 24;
   const hlMinBase = hlSect.y + PAD + TS.hl * 0.75;
   const hlMaxBase = Math.max(hlMinBase, hlSect.y + hlSect.h - textEndFromBase);
   const hlTextY   = rnd(hlMinBase, hlMaxBase);
@@ -669,7 +669,7 @@ function renderBanner(canvas, layout, content, s) {
       : wrapText(ctx, content.sub, maxShW).slice(0, 2);
 
     const shLH = TS.sh * 1.2 * s;
-    let shY = curY + 30 * s;
+    let shY = curY + 32 * s;
     for (const line of shLines) {
       if (line.trim()) { ctx.fillText(clampLine(line), shT.x * s, shY); shY += shLH; }
     }
