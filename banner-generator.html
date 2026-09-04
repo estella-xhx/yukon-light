@@ -406,16 +406,14 @@ function generateLayout(szId) {
   const hlTextY   = rnd(hlMinBase, hlMaxBase);
   const ctaTextCY = ctaSide === 'bottom' ? h - ctaH / 2 : ctaH / 2;
 
-  // Headline/subhead text must be ≥40px from every surrounding grid line.
-  // The margin lines (PAD and w-PAD) run full-height inside the right column:
-  //   sbSide='left'  → left bound = sbEdge=hlX, right bound = w-PAD (margin line inside col)
-  //   sbSide='right' → left bound = PAD (margin line inside col), right bound = sbEdge
+  // All copy: flush left, 30px from nearest bounding grid line, 48px from canvas edge.
+  // The margin lines (PAD and w-PAD) run full-height and are the bounding lines:
+  //   sbSide='left'  → col left bound = sbEdge=hlX, col right bound = w-PAD
+  //   sbSide='right' → col left bound = PAD,        col right bound = sbEdge
   const textLeftLine  = sbSide === 'left' ? hlX     : PAD;
   const textRightLine = sbSide === 'left' ? w - PAD : hlX + hlW;
-  const MIN_TEXT_PAD  = 40;
-  const hlTextX    = Math.max(hlX + 60, textLeftLine  + MIN_TEXT_PAD);
-  const textRightX = Math.min(hlX + hlW - 60, textRightLine - MIN_TEXT_PAD);
-  const hlTextMaxW = Math.max(1, textRightX - hlTextX);
+  const hlTextX    = textLeftLine  + 30;
+  const hlTextMaxW = Math.max(1, textRightLine - 30 - hlTextX);
 
   // ── Grid lines ─────────────────────────────────────────────────────────────────
   const gridLines = [];
@@ -477,7 +475,7 @@ function generateLayout(szId) {
     ct: { x: hlX,     y: ctaY,      w: hlW,     h: ctaH       },
     hlText:  { x: hlTextX, maxW: hlTextMaxW, y: hlTextY },
     shText:  { x: hlTextX, maxW: hlTextMaxW },
-    ctaText: { x: hlX + PAD + 12, cy: ctaTextCY },
+    ctaText: { x: textLeftLine + 30, cy: ctaTextCY },
     elH: szId === 'wide' ? 49 : 64,
     gridLines,
   };
@@ -511,6 +509,9 @@ function fitText(ctx, text, wt, fam, maxSz, minSz, maxW, maxLines, s) {
 // ── Challenge Launch renderer ─────────────────────────────────────────────────
 function renderBanner(canvas, layout, content, s) {
   const { w, h, PAD, TS, sbSide } = layout;
+  // Flush-left anchors: 30px from bounding grid line (margin lines + column separator)
+  const sbStartX = ((sbSide === 'left' ? PAD : layout.sbEdge) + 30);  // sidebar left anchor (layout units)
+  const sbEndX   = ((sbSide === 'left' ? layout.sbEdge : w - PAD) - 30); // sidebar right limit
   canvas.width  = Math.round(w * s);
   canvas.height = Math.round(h * s);
   const ctx = canvas.getContext('2d');
@@ -544,34 +545,35 @@ function renderBanner(canvas, layout, content, s) {
     ctx.stroke();
   }
 
-  // Yukon wordmark — lime text centred in Yukon tile
+  // Yukon wordmark — lime text, flush left in Yukon tile
   setFont(ctx, 500, TS.wm, F.disp, s);
   ctx.fillStyle = C.lime;
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Yukon', (ym.x + ym.w / 2) * s, (ym.y + ym.h / 2) * s);
+  ctx.fillText('Yukon', sbStartX * s, (ym.y + ym.h / 2) * s);
 
-  // EigenLabs lockup — centred in EigenLabs tile (white bg)
+  // EigenLabs lockup — flush left in EigenLabs tile, capped to tile right limit
   const em = layout.em;
   if (eigenImg && eigenImg.naturalWidth > 0) {
     const imgH = layout.elH * s;
-    const imgW = eigenImg.naturalWidth * (imgH / eigenImg.naturalHeight);
-    const imgX = (em.x + em.w / 2) * s - imgW / 2;
+    const maxImgW = (sbEndX - sbStartX) * s;
+    const imgW = Math.min(eigenImg.naturalWidth * (imgH / eigenImg.naturalHeight), maxImgW);
+    const imgX = sbStartX * s;
     const imgY = (em.y + em.h / 2) * s - imgH / 2;
     ctx.drawImage(eigenImg, imgX, imgY, imgW, imgH);
   } else {
     setFont(ctx, 400, Math.round(layout.elH * 0.48), F.body, s);
     ctx.fillStyle = 'rgba(25,6,141,0.4)';
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Powered by EigenLabs', (em.x + em.w / 2) * s, (em.y + em.h / 2) * s);
+    ctx.fillText('Powered by EigenLabs', sbStartX * s, (em.y + em.h / 2) * s);
   }
 
   // Collaborator — always rendered; always left-aligned; color matches subhead
   const co = layout.co;
   {
     const coMidY = (co.y + co.h / 2) * s;
-    const coTxtX = (co.x + PAD + 12) * s;
+    const coTxtX = layout.hlText.x * s; // same flush-left anchor as headline (30px from col grid line)
     const coSz   = Math.max(18, TS.co);
     setFont(ctx, 400, coSz, F.body, s);
     ctx.textAlign    = 'left';
