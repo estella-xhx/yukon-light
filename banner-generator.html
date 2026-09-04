@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Yukon Banner Generator</title>
+<style>
+@font-face {
+  font-family: 'Zalando Sans SemiExpanded';
+  src: url('Zalando_Sans_SemiExpanded/ZalandoSansSemiExpanded-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; font-style: normal;
+}
+@font-face {
+  font-family: 'ABC Repro Variable';
+  src: url('ABC Repro Variable/ABCReproVariable-Trial.woff2') format('woff2'),
+       url('ABC Repro Variable/ABCReproVariable-Trial.ttf') format('truetype');
+  font-weight: 100 900; font-style: normal;
+}
+@font-face {
+  font-family: 'ABC Repro Mono Variable';
+  src: url('ABC Repro Mono Variable/ABCReproMonoVariable-Trial.woff2') format('woff2'),
+       url('ABC Repro Mono Variable/ABCReproMonoVariable-Trial.ttf') format('truetype');
+  font-weight: 100 900; font-style: normal;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f0eff8; color: #19068d;
+  font-family: 'ABC Repro Variable', sans-serif;
+  font-size: 12px; line-height: 1.4; letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+.app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+.sidebar {
+  background: #fff; border-right: 1px solid rgba(25,6,141,0.12);
+  padding: 28px 20px 32px; display: flex; flex-direction: column; gap: 20px;
+  overflow-y: auto; position: sticky; top: 0; height: 100vh;
+}
+.brand { display: flex; flex-direction: column; gap: 3px; }
+.brand-name { font-family: 'Zalando Sans SemiExpanded', sans-serif; font-size: 17px; font-weight: 400; line-height: 1.1; color: #19068d; }
+.brand-sub { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(25,6,141,0.38); }
+hr { border: none; border-top: 1px solid rgba(25,6,141,0.1); }
+.mode-tabs { display: flex; gap: 0; }
+.mode-btn {
+  flex: 1; padding: 8px 6px; border: 1px solid rgba(25,6,141,0.22); background: #fff;
+  color: rgba(25,6,141,0.5); font-family: 'ABC Repro Variable', sans-serif;
+  font-size: 10px; letter-spacing: 0.03em; cursor: pointer; text-align: center;
+  margin-right: -1px;
+}
+.mode-btn.on { border-color: #19068d; background: #19068d; color: #fff; z-index: 1; position: relative; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(25,6,141,0.45); }
+input[type="text"] {
+  border: 1px solid rgba(25,6,141,0.22); background: #fff; color: #19068d;
+  font-family: 'ABC Repro Variable', sans-serif; font-size: 12px; letter-spacing: -0.02em;
+  padding: 7px 9px; outline: none; border-radius: 0; -webkit-appearance: none; width: 100%;
+}
+input[type="text"]:focus { border-color: #19068d; }
+.size-row { display: flex; gap: 5px; }
+.size-btn {
+  flex: 1; padding: 7px 4px; border: 1px solid rgba(25,6,141,0.22); background: #fff;
+  color: rgba(25,6,141,0.5); font-family: 'ABC Repro Variable', sans-serif;
+  font-size: 9px; letter-spacing: 0.03em; cursor: pointer; text-align: center; line-height: 1.5;
+}
+.size-btn.on { border-color: #19068d; background: #19068d; color: #fff; }
+.logo-drop {
+  border: 1px dashed rgba(25,6,141,0.22); padding: 10px 12px; cursor: pointer;
+  text-align: center; color: rgba(25,6,141,0.4); font-size: 10px; letter-spacing: 0.04em;
+}
+.logo-drop:hover { border-color: #19068d; }
+.logo-thumb { max-height: 28px; max-width: 110px; display: block; margin: 7px auto 0; }
+input[type="file"] { display: none; }
+.btn-gen {
+  width: 100%; padding: 11px; background: #19068d; color: #fff; border: none;
+  font-family: 'ABC Repro Variable', sans-serif; font-size: 12px; cursor: pointer; letter-spacing: 0;
+}
+.btn-gen:hover { background: #0f0460; }
+.btn-row { display: flex; gap: 6px; }
+.btn-out {
+  flex: 1; padding: 9px 6px; background: transparent; color: #19068d;
+  border: 1px solid rgba(25,6,141,0.22); font-family: 'ABC Repro Variable', sans-serif;
+  font-size: 10px; cursor: pointer; letter-spacing: 0.02em; text-align: center;
+}
+.btn-out:hover { border-color: #19068d; background: rgba(25,6,141,0.04); }
+.btn-all {
+  width: 100%; padding: 10px; background: #DDFF55; color: #19068d; border: none;
+  font-family: 'ABC Repro Variable', sans-serif; font-size: 10px; cursor: pointer;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.btn-all:hover { background: #ccee44; }
+.main {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px; min-height: 100vh; gap: 14px;
+}
+.canvas-wrap { line-height: 0; }
+#preview {
+  display: block; max-width: 100%; max-height: calc(100vh - 100px);
+  border: 1px solid rgba(25,6,141,0.14); box-shadow: 0 2px 20px rgba(25,6,141,0.1);
+}
+.preview-meta {
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(25,6,141,0.4); text-align: center;
+}
+/* Winner form styles */
+.winner-inputs { display: flex; flex-direction: column; gap: 5px; }
+.winner-row { display: grid; grid-template-columns: 22px 1fr 60px 64px; gap: 4px; align-items: center; }
+.winner-rank { font-size: 10px; color: rgba(25,6,141,0.4); text-align: center; }
+.winner-row input { padding: 5px 7px; font-size: 11px; }
+.raffle-row { display: grid; grid-template-columns: 1fr 64px; gap: 4px; align-items: center; margin-bottom: 4px; }
+.raffle-row input { padding: 5px 7px; font-size: 11px; }
+.raffle-del {
+  background: transparent; border: 1px solid rgba(25,6,141,0.18); color: rgba(25,6,141,0.4);
+  cursor: pointer; font-size: 13px; line-height: 1; padding: 3px 5px; font-family: inherit;
+}
+.raffle-del:hover { border-color: #19068d; color: #19068d; }
+.btn-add {
+  background: transparent; border: 1px dashed rgba(25,6,141,0.22); color: rgba(25,6,141,0.5);
+  cursor: pointer; font-family: 'ABC Repro Variable', sans-serif; font-size: 10px;
+  padding: 6px 10px; width: 100%; letter-spacing: 0.02em; margin-top: 2px;
+}
+.btn-add:hover { border-color: #19068d; color: #19068d; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">Banner Generator</div>
+    <div class="brand-sub">Yukon · Social</div>
+  </div>
+  <hr>
+  <div class="mode-tabs">
+    <button class="mode-btn on" data-mode="launch" onclick="setMode('launch')">Challenge Launch</button>
+    <button class="mode-btn" data-mode="winner" onclick="setMode('winner')">Weekly Winner</button>
+  </div>
+  <hr>
+
+  <!-- Challenge Launch fields -->
+  <div id="launchFields" style="display:flex;flex-direction:column;gap:20px;">
+    <div class="field">
+      <label>Challenge name</label>
+      <input type="text" id="fName" placeholder="ECDSA.fail" value="ECDSA.fail">
+    </div>
+    <div class="field">
+      <label>Subhead</label>
+      <input type="text" id="fSub" placeholder="Unsolved since 2022. Now open." value="Unsolved since 2022. Now open.">
+    </div>
+    <div class="field">
+      <label>Collaborator name</label>
+      <input type="text" id="fCollab" placeholder="Carnegie Mellon University" value="">
+    </div>
+    <div class="field">
+      <label>Collaborator logo</label>
+      <div class="logo-drop" id="logoDrop" onclick="document.getElementById('logoFile').click()">
+        <span id="logoLabel">Click to upload</span>
+        <img id="logoThumb" class="logo-thumb" style="display:none">
+      </div>
+      <input type="file" id="logoFile" accept="image/*">
+    </div>
+  </div>
+
+  <!-- Weekly Winner fields -->
+  <div id="winnerFields" style="display:none;flex-direction:column;gap:20px;">
+    <div class="field">
+      <label>Date range</label>
+      <input type="text" id="wDate" placeholder="Aug 12 – Aug 20" value="Aug 12 – Aug 20">
+    </div>
+    <div class="field">
+      <label>Top winners</label>
+      <div class="winner-inputs">
+        <div class="winner-row">
+          <span class="winner-rank">#1</span>
+          <input type="text" id="w1h" placeholder="@handle" value="@i34-9">
+          <input type="text" id="w1p" placeholder="$3,500" value="$3,500">
+          <input type="text" id="w1pts" placeholder="12,869" value="12,869">
+        </div>
+        <div class="winner-row">
+          <span class="winner-rank">#2</span>
+          <input type="text" id="w2h" placeholder="@handle" value="@newjordan">
+          <input type="text" id="w2p" placeholder="$2,000" value="$2,000">
+          <input type="text" id="w2pts" placeholder="6,937" value="6,937">
+        </div>
+        <div class="winner-row">
+          <span class="winner-rank">#3</span>
+          <input type="text" id="w3h" placeholder="@handle" value="@welttowelt">
+          <input type="text" id="w3p" placeholder="$1,500" value="$1,500">
+          <input type="text" id="w3pts" placeholder="5,469" value="5,469">
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Raffle winners ($1,000 each)</label>
+      <div id="raffleList"></div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="field">
+    <label>Output size</label>
+    <div class="size-row">
+      <button class="size-btn on" data-sz="wide"     onclick="setSize('wide')">1200×627<br>Wide</button>
+      <button class="size-btn"    data-sz="square"   onclick="setSize('square')">1200×1200<br>Square</button>
+      <button class="size-btn"    data-sz="portrait" onclick="setSize('portrait')">1080×1350<br>Portrait</button>
+    </div>
+  </div>
+  <button class="btn-gen" id="btnGen" onclick="generate()">Generate new layout</button>
+  <div class="btn-row">
+    <button class="btn-out" onclick="exportCurrent()">Export PNG</button>
+  </div>
+  <button class="btn-all" onclick="exportAll()">Export all 3 sizes</button>
+</aside>
+
+<main class="main">
+  <div class="canvas-wrap"><canvas id="preview"></canvas></div>
+  <div class="preview-meta" id="pmeta">1200 × 627 · Wide</div>
+</main>
+
+</div>
+<script>
+// ── Brand tokens ──────────────────────────────────────────────────────────────
+const C = {
+  indigo: '#19068d',
+  winnerBg: '#1800a6',
+  winnerRow: '#150090',
+  winnerBorder: '#323dd8',
+  lime:   '#DDFF55',
+  white:  '#ffffff',
+  grid:   '#D2D5FF',
+  raffleUrl: 'rgba(177,164,255,0.64)',
+};
+const F = {
+  disp: "'Zalando Sans SemiExpanded', sans-serif",
+  body: "'ABC Repro Variable', sans-serif",
+  mono: "'ABC Repro Mono Variable', monospace",
+};
+const EXPORT_SCALE = 4;
+
+const SIZES = {
+  wide:     { w: 1200, h: 627,  label: '1200 × 627 · Wide' },
+  square:   { w: 1200, h: 1200, label: '1200 × 1200 · Square' },
+  portrait: { w: 1080, h: 1350, label: '1080 × 1350 · Portrait' },
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let activeMode    = 'launch';
+let activeSz      = 'wide';
+let collabImg     = null;
+let eigenImg      = null;
+let poweredByImg  = null;
+let currentLayout = null;
+let fontsReady    = false;
+
+// ── Randomisation helpers ─────────────────────────────────────────────────────
+const rnd    = (a, b) => a + Math.random() * (b - a);
+const rndInt = (a, b) => Math.floor(rnd(a, b + 0.999));
+const pick   = arr   => arr[Math.floor(Math.random() * arr.length)];
+
+// ── Layout generation (Challenge Launch) ─────────────────────────────────────
+// ym always anchors the sidebar. One of {em, co} is placed in the right column
+// so all three tiles land in genuinely different canvas regions every generation.
+// Every grid line terminates at a canvas edge — no floating ends.
+function generateLayout(szId) {
+  const { w, h } = SIZES[szId];
+  const PAD = 48;
+
+  const TS = szId === 'wide'
+    ? { hl: 90,  sh: 36, sm: 24, co: 20, wm: 39 }
+    : szId === 'square'
+    ? { hl: 108, sh: 43, sm: 24, co: 23, wm: 49 }
+    : { hl: 100, sh: 40, sm: 24, co: 23, wm: 45 };
+
+  const sbSide  = pick(['left', 'right']);
+  const ctaSide = pick(['top', 'bottom']);
+
+  const sbRange  = { wide: [240, 320], square: [280, 380], portrait: [260, 350] }[szId];
+  const ctaRange = { wide: [85, 105],  square: [100, 140], portrait: [100, 140] }[szId];
+
+  const sbW  = rndInt(...sbRange);
+  const ctaH = rndInt(...ctaRange);
+
+  const sbX          = sbSide === 'left' ? 0 : w - sbW;
+  const sbEdge       = sbSide === 'left' ? sbW : sbX;
+  const hlX          = sbSide === 'left' ? sbW : 0;
+  const hlW          = w - sbW;
+  const ctaY         = ctaSide === 'bottom' ? h - ctaH : 0;
+  const ctaBoundaryY = ctaSide === 'bottom' ? h - ctaH : ctaH;
+  const sbY          = ctaSide === 'top'    ? ctaH : 0;
+  const ncH          = h - ctaH;
+
+  // ── Tile distribution ─────────────────────────────────────────────────────────
+  // ym stays in the sidebar. em always stays in the sidebar (narrower cell).
+  // co goes to the right column so the three tiles span both halves of the canvas.
+  const emInRight   = false;
+  const sidebarTile = emInRight ? 'co' : 'em';
+  const rightTile   = emInRight ? 'em' : 'co';
+
+  // ── Section counts — target 9 or 10 total cells ──────────────────────────────
+  const nLeftEmpty  = rndInt(1, 2); // empty rows in sidebar
+  // nRightEmpty is deferred until after hlSectionH so we know the actual space available
+  const nLeft       = 2 + nLeftEmpty;  // ym + sidebarTile + empties (3–4)
+  const totalTarget = rndInt(9, 10);
+
+  // ── Headline section height ────────────────────────────────────────────────────
+  const textBlockMinH = Math.ceil(
+    PAD + TS.hl * 0.75
+    + TS.hl * 1.08 * 2
+    + TS.sh * 1.15
+    + TS.sh * 1.2 * 2
+    + 24
+  );
+  const rightTileMinH = Math.max(100, Math.round(ncH * 0.12));
+  const areaMinH   = Math.round(0.40 * w * h / hlW);
+  const areaMaxH   = Math.round(0.55 * w * h / hlW);
+  const minHlH     = Math.max(areaMinH, textBlockMinH);
+  const maxHlH     = Math.min(areaMaxH, ncH - rightTileMinH, Math.round(h * 0.84));
+  const hlSectionH = Math.min(
+    rndInt(Math.min(minHlH, maxHlH), Math.max(minHlH, maxHlH)),
+    ncH - rightTileMinH
+  );
+
+  // ── Right column: headline + one content tile + empty sections ────────────────
+  const rightRemH = ncH - hlSectionH;
+  // Determine nRightEmpty based on actual remaining space (each empty needs ≥48px)
+  const nRightEmpty = Math.min(rndInt(1, 2), Math.max(0, Math.floor((rightRemH - rightTileMinH) / 48)));
+  const nRight      = 2 + nRightEmpty;
+  const nVSplits    = Math.max(0, totalTarget - nLeft - nRight - 1);
+  const rightTileH  = Math.max(rightTileMinH, Math.min(
+    Math.round(rightRemH * rnd(0.40, 0.65)),
+    rightRemH - nRightEmpty * 48
+  ));
+  const rightEmptyTH = Math.max(0, rightRemH - rightTileH);
+  const rightEW = Array.from({ length: nRightEmpty }, () => rnd(0.4, 1.6));
+  const totalREW = rightEW.reduce((a, b) => a + b, 0) || 1;
+  const rightEH = rightEW.map(wt => Math.round(rightEmptyTH * wt / totalREW));
+  if (rightEH.length > 0) rightEH[rightEH.length - 1] += rightEmptyTH - rightEH.reduce((a, b) => a + b, 0);
+
+  // Shuffle right column order; prevent headline from being the very last section
+  const rTypes = ['hl', rightTile, ...Array(nRightEmpty).fill('empty')];
+  for (let i = rTypes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rTypes[i], rTypes[j]] = [rTypes[j], rTypes[i]];
+  }
+  if (rTypes[rTypes.length - 1] === 'hl' && rTypes.length > 2) {
+    const si = Math.floor(Math.random() * (rTypes.length - 1));
+    [rTypes[rTypes.length - 1], rTypes[si]] = [rTypes[si], rTypes[rTypes.length - 1]];
+  }
+
+  let ry = sbY, rei = 0;
+  const rightSections = rTypes.map(type => {
+    const secH = type === 'hl' ? hlSectionH
+               : type === rightTile ? rightTileH
+               : rightEH[rei++];
+    const sec = { type, y: ry, h: secH };
+    ry += secH;
+    return sec;
+  });
+  const hlSect        = rightSections.find(s => s.type === 'hl');
+  const rightTileSect = rightSections.find(s => s.type === rightTile);
+
+  // ── Left column: ym + one content tile + empty sections ───────────────────────
+  const nLBefore = rndInt(0, Math.min(2, nLeftEmpty));
+  const nLRem1   = nLeftEmpty - nLBefore;
+  const nLMid    = rndInt(0, Math.min(1, nLRem1));
+  const nLAfter  = nLRem1 - nLMid;
+  const leftTypes = [
+    ...Array(nLBefore).fill('empty'), 'ym',
+    ...Array(nLMid).fill('empty'), sidebarTile,
+    ...Array(nLAfter).fill('empty'),
+  ];
+  const leftW   = leftTypes.map(t => t === 'empty' ? rnd(0.8, 1.5) : rnd(1.4, 2.2));
+  const totalLW = leftW.reduce((a, b) => a + b, 0);
+  const leftH   = leftW.map(wt => Math.round(ncH * wt / totalLW));
+  leftH[leftH.length - 1] += ncH - leftH.reduce((a, b) => a + b, 0);
+
+  // Enforce Yukon tile is horizontal: height must be strictly less than its width (sbW)
+  const ymIdx = leftTypes.indexOf('ym');
+  if (leftH[ymIdx] >= sbW) {
+    const excess = leftH[ymIdx] - (sbW - 4);
+    leftH[ymIdx] = sbW - 4;
+    // Redistribute excess to the last empty section in the sidebar
+    const emptyIdxs = leftTypes.map((t, i) => t === 'empty' ? i : -1).filter(i => i >= 0);
+    const adjustIdx = emptyIdxs.length > 0 ? emptyIdxs[emptyIdxs.length - 1] : leftTypes.length - 1;
+    leftH[adjustIdx] += excess;
+  }
+
+  let ly = sbY;
+  const leftSections = leftTypes.map((type, i) => {
+    const sec = { type, y: ly, h: leftH[i] };
+    ly += leftH[i];
+    return sec;
+  });
+  const ymSect          = leftSections.find(s => s.type === 'ym');
+  const sidebarTileSect = leftSections.find(s => s.type === sidebarTile);
+
+  // ── Resolve em/co tile geometry ───────────────────────────────────────────────
+  const emSect  = emInRight ? rightTileSect : sidebarTileSect;
+  const emTileX = emInRight ? hlX : sbX;
+  const emTileW = emInRight ? hlW : sbW;
+  const coSect  = emInRight ? sidebarTileSect : rightTileSect;
+  const coTileX = emInRight ? sbX : hlX;
+  const coTileW = emInRight ? sbW : hlW;
+
+  // ── Text positioning ───────────────────────────────────────────────────────────
+  const textEndFromBase = TS.hl * 1.08 * 2 + TS.sh * 1.15 + TS.sh * 1.2 * 2 + 24;
+  const hlMinBase = hlSect.y + PAD + TS.hl * 0.75;
+  const hlMaxBase = Math.max(hlMinBase, hlSect.y + hlSect.h - textEndFromBase);
+  const hlTextY   = rnd(hlMinBase, hlMaxBase);
+  const ctaTextCY = ctaSide === 'bottom' ? h - ctaH / 2 : ctaH / 2;
+
+  // Headline/subhead text must be ≥40px from every surrounding grid line.
+  // The margin lines (PAD and w-PAD) run full-height inside the right column:
+  //   sbSide='left'  → left bound = sbEdge=hlX, right bound = w-PAD (margin line inside col)
+  //   sbSide='right' → left bound = PAD (margin line inside col), right bound = sbEdge
+  const textLeftLine  = sbSide === 'left' ? hlX     : PAD;
+  const textRightLine = sbSide === 'left' ? w - PAD : hlX + hlW;
+  const MIN_TEXT_PAD  = 40;
+  const hlTextX    = Math.max(hlX + 60, textLeftLine  + MIN_TEXT_PAD);
+  const textRightX = Math.min(hlX + hlW - 60, textRightLine - MIN_TEXT_PAD);
+  const hlTextMaxW = Math.max(1, textRightX - hlTextX);
+
+  // ── Grid lines ─────────────────────────────────────────────────────────────────
+  const gridLines = [];
+  gridLines.push({ type: 'v', pos: sbEdge });
+  gridLines.push({ type: 'v', pos: PAD });       // left margin — 48px from left edge
+  gridLines.push({ type: 'v', pos: w - PAD });   // right margin — 48px from right edge
+  gridLines.push({ type: 'h', pos: ctaBoundaryY, x1: 0, x2: w });
+  for (let i = 1; i < leftSections.length; i++)
+    gridLines.push({ type: 'h', pos: leftSections[i].y, x1: sbX, x2: sbX + sbW });
+  for (let i = 1; i < rightSections.length; i++)
+    gridLines.push({ type: 'h', pos: rightSections[i].y, x1: hlX, x2: hlX + hlW });
+
+  // Vertical splits: right column empty sections, right portion of column (clears headline text)
+  const eligible = rightSections.filter(s => s.type === 'empty');
+  eligible.sort(() => Math.random() - 0.5);
+  const placedVerts = [sbEdge, PAD, w - PAD]; // include margin lines in exclusion set
+  const splitMinX = hlX + Math.round(hlW * 0.72);
+  const splitMaxX = hlX + hlW - 30;
+  for (let i = 0; i < Math.min(nVSplits, eligible.length); i++) {
+    let placed = false;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const candidateX = Math.round(rnd(splitMinX, splitMaxX));
+      const minDist = Math.min(...placedVerts.map(x => Math.abs(x - candidateX)));
+      if (minDist >= 120) {
+        gridLines.push({ type: 'v', pos: candidateX });
+        placedVerts.push(candidateX);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) break;
+  }
+
+  // Post-processing: drop any H line within 48px of another H line with overlapping x-range
+  {
+    const MIN_GAP = 48;
+    const hAll = gridLines.filter(l => l.type === 'h').sort((a, b) => a.pos - b.pos);
+    const vAll = gridLines.filter(l => l.type === 'v');
+    const kept = [];
+    for (const line of hAll) {
+      const lx1 = line.x1 ?? 0, lx2 = line.x2 ?? w;
+      const clash = kept.some(k => {
+        const kx1 = k.x1 ?? 0, kx2 = k.x2 ?? w;
+        return lx1 < kx2 && kx1 < lx2 && line.pos - k.pos < MIN_GAP;
+      });
+      if (!clash) kept.push(line);
+    }
+    gridLines.length = 0;
+    gridLines.push(...kept, ...vAll);
+  }
+
+  return {
+    szId, w, h, PAD, TS, sbSide,
+    sbX, sbW, sbEdge, hlX, hlW,
+    ym: { x: sbX,     y: ymSect.y,  w: sbW,     h: ymSect.h  },
+    em: { x: emTileX, y: emSect.y,  w: emTileW, h: emSect.h  },
+    co: { x: coTileX, y: coSect.y,  w: coTileW, h: coSect.h  },
+    hl: { x: hlX,     y: hlSect.y,  w: hlW,     h: hlSect.h  },
+    ct: { x: hlX,     y: ctaY,      w: hlW,     h: ctaH       },
+    hlText:  { x: hlTextX, maxW: hlTextMaxW, y: hlTextY },
+    shText:  { x: hlTextX, maxW: hlTextMaxW },
+    ctaText: { x: hlX + PAD + 12, cy: ctaTextCY },
+    elH: szId === 'wide' ? 49 : 64,
+    gridLines,
+  };
+}
+
+// ── Text helpers ──────────────────────────────────────────────────────────────
+function setFont(ctx, wt, sz, fam, s) { ctx.font = `${wt} ${sz * s}px ${fam}`; }
+
+function wrapText(ctx, text, maxPx) {
+  const words = text.split(' ');
+  const lines = []; let cur = '';
+  for (const word of words) {
+    const test = cur ? `${cur} ${word}` : word;
+    if (ctx.measureText(test).width > maxPx && cur) { lines.push(cur); cur = word; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function fitText(ctx, text, wt, fam, maxSz, minSz, maxW, maxLines, s) {
+  for (let sz = maxSz; sz >= minSz; sz -= 2) {
+    setFont(ctx, wt, sz, fam, s);
+    const lines = wrapText(ctx, text, maxW * s);
+    if (lines.length <= maxLines) return { sz, lines };
+  }
+  setFont(ctx, wt, minSz, fam, s);
+  return { sz: minSz, lines: wrapText(ctx, text, maxW * s) };
+}
+
+// ── Challenge Launch renderer ─────────────────────────────────────────────────
+function renderBanner(canvas, layout, content, s) {
+  const { w, h, PAD, TS, sbSide } = layout;
+  canvas.width  = Math.round(w * s);
+  canvas.height = Math.round(h * s);
+  const ctx = canvas.getContext('2d');
+
+  // White background
+  ctx.fillStyle = C.white;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Yukon tile — indigo fill
+  const ym = layout.ym;
+  ctx.fillStyle = C.indigo;
+  ctx.fillRect(ym.x * s, ym.y * s, ym.w * s, ym.h * s);
+
+  // CTA tile — indigo fill (full width strip)
+  const ct = layout.ct;
+  ctx.fillRect(ct.x * s, ct.y * s, ct.w * s, ct.h * s);
+
+  // Grid lines — structural tile boundaries + interior accent lines
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 1.95 * s;
+  for (const gl of layout.gridLines) {
+    const p = Math.round(gl.pos * s) + 0.5;
+    ctx.beginPath();
+    if (gl.type === 'v') {
+      ctx.moveTo(p, gl.y1 != null ? gl.y1 * s : 0);
+      ctx.lineTo(p, gl.y2 != null ? gl.y2 * s : canvas.height);
+    } else {
+      ctx.moveTo(gl.x1 != null ? gl.x1 * s : 0, p);
+      ctx.lineTo(gl.x2 != null ? gl.x2 * s : canvas.width, p);
+    }
+    ctx.stroke();
+  }
+
+  // Yukon wordmark — lime text centred in Yukon tile
+  setFont(ctx, 500, TS.wm, F.disp, s);
+  ctx.fillStyle = C.lime;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Yukon', (ym.x + ym.w / 2) * s, (ym.y + ym.h / 2) * s);
+
+  // EigenLabs lockup — centred in EigenLabs tile (white bg)
+  const em = layout.em;
+  if (eigenImg && eigenImg.naturalWidth > 0) {
+    const imgH = layout.elH * s;
+    const imgW = eigenImg.naturalWidth * (imgH / eigenImg.naturalHeight);
+    const imgX = (em.x + em.w / 2) * s - imgW / 2;
+    const imgY = (em.y + em.h / 2) * s - imgH / 2;
+    ctx.drawImage(eigenImg, imgX, imgY, imgW, imgH);
+  } else {
+    setFont(ctx, 400, Math.round(layout.elH * 0.48), F.body, s);
+    ctx.fillStyle = 'rgba(25,6,141,0.4)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Powered by EigenLabs', (em.x + em.w / 2) * s, (em.y + em.h / 2) * s);
+  }
+
+  // Collaborator — always rendered; always left-aligned; color matches subhead
+  const co = layout.co;
+  {
+    const coMidY = (co.y + co.h / 2) * s;
+    const coTxtX = (co.x + PAD + 12) * s;
+    const coSz   = Math.max(18, TS.co);
+    setFont(ctx, 400, coSz, F.body, s);
+    ctx.textAlign    = 'left';
+    ctx.textBaseline = 'middle';
+    if (content.collab || collabImg) {
+      ctx.fillStyle = 'rgba(25,6,141,0.65)'; // matches subhead
+      if (content.collab) ctx.fillText(content.collab, coTxtX, coMidY - (collabImg ? coSz * s : 0));
+      if (collabImg) {
+        const lh = coSz * 1.7 * s;
+        const lw = collabImg.naturalWidth * (lh / collabImg.naturalHeight);
+        const ly = coMidY + (content.collab ? coSz * 0.6 * s : -lh / 2);
+        ctx.drawImage(collabImg, coTxtX, ly, lw, lh);
+      }
+    } else {
+      ctx.fillStyle = 'rgba(25,6,141,0.45)';
+      ctx.fillText('Collaborator', coTxtX, coMidY);
+    }
+  }
+
+  // Headline — forced 2-line split: line 1 = challenge name, line 2 = "is live"
+  const hlT = layout.hlText;
+  const hlLine1 = content.name || 'Challenge';
+  const hlLine2 = 'is live';
+  // Reduce font size only if challenge name overflows section width
+  let hlSz = TS.hl;
+  const minHlSz = Math.round(TS.hl * 0.70);
+  setFont(ctx, 400, hlSz, F.disp, s);
+  while (hlSz > minHlSz && ctx.measureText(hlLine1).width > hlT.maxW * s) {
+    hlSz -= 2;
+    setFont(ctx, 400, hlSz, F.disp, s);
+  }
+  ctx.fillStyle = C.indigo;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  let curY = hlT.y * s;
+  const hlLH = hlSz * 1.08 * s;
+  let hlActualW = 0;
+  for (const line of [hlLine1, hlLine2]) {
+    hlActualW = Math.max(hlActualW, ctx.measureText(line).width);
+    ctx.fillText(line, hlT.x * s, curY);
+    curY += hlLH;
+  }
+
+  // Subhead — ABC Repro, 2 lines split by sentence ('. '), clamped to headline width
+  if (content.sub) {
+    const shT = layout.shText;
+    setFont(ctx, 400, TS.sh, F.body, s);
+    ctx.fillStyle = 'rgba(25,6,141,0.65)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    const maxShW = Math.min(shT.maxW * s, hlActualW || shT.maxW * s);
+    const clampLine = txt => {
+      while (txt.length > 8 && ctx.measureText(txt).width > maxShW) txt = txt.slice(0, -4) + '…';
+      return txt;
+    };
+
+    const dotIdx = content.sub.indexOf('. ');
+    const shLines = dotIdx !== -1
+      ? [content.sub.slice(0, dotIdx + 1), content.sub.slice(dotIdx + 2)]
+      : wrapText(ctx, content.sub, maxShW).slice(0, 2);
+
+    const shLH = TS.sh * 1.2 * s;
+    let shY = curY + TS.sh * 1.15 * s;
+    for (const line of shLines) {
+      if (line.trim()) { ctx.fillText(clampLine(line), shT.x * s, shY); shY += shLH; }
+    }
+  }
+
+  // CTA text — white on indigo, 18px (wide) / 23px (sq+pt)
+  const ctaT = layout.ctaText;
+  const pre = 'Solve Yukon challenges at ';
+  const url = 'yukon.org';
+  setFont(ctx, 400, TS.sm, F.body, s);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  ctx.fillText(pre, ctaT.x * s, ctaT.cy * s);
+  const preW = ctx.measureText(pre).width;
+  ctx.fillStyle = C.lime;
+  ctx.fillText(url, ctaT.x * s + preW, ctaT.cy * s);
+}
+
+// ── Weekly Winner renderer ────────────────────────────────────────────────────
+
+// Fixed grid lines per size (from Figma)
+const WINNER_GRIDS = {
+  wide: [
+    { type:'v', x:48,   y1:0,   y2:627 },
+    { type:'v', x:825,  y1:0,   y2:627 },
+    { type:'v', x:1152, y1:0,   y2:627 },
+    { type:'h', y:169,  x1:825, x2:1200 },
+    { type:'h', y:529,  x1:0,   x2:1200 },
+  ],
+  square: [
+    { type:'v', x:48,   y1:0,    y2:1200 },
+    { type:'v', x:847,  y1:0,    y2:374  },
+    { type:'v', x:1152, y1:0,    y2:1200 },
+    { type:'h', y:203,  x1:847,  x2:1200 },
+    { type:'h', y:374,  x1:0,    x2:1200 },
+    { type:'h', y:923,  x1:0,    x2:1200 },
+    { type:'h', y:1083, x1:0,    x2:1200 },
+  ],
+  portrait: [
+    { type:'v', x:42,   y1:0,    y2:1350 },
+    { type:'v', x:771,  y1:0,    y2:444  },
+    { type:'v', x:1049, y1:0,    y2:1350 },
+    { type:'h', y:263,  x1:771,  x2:1080 },
+    { type:'h', y:442,  x1:0,    x2:1080 },
+    { type:'h', y:983,  x1:0,    x2:1080 },
+    { type:'h', y:1212, x1:0,    x2:1080 },
+  ],
+};
+
+function renderWinnerBanner(canvas, szId, wc, s) {
+  const { w, h } = SIZES[szId];
+  canvas.width  = Math.round(w * s);
+  canvas.height = Math.round(h * s);
+  const ctx = canvas.getContext('2d');
+  const p = v => v * s;
+
+  // Background
+  ctx.fillStyle = C.winnerBg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid lines
+  ctx.strokeStyle = '#323DD8';
+  ctx.lineWidth = 1.5 * s;
+  for (const gl of WINNER_GRIDS[szId]) {
+    ctx.beginPath();
+    if (gl.type === 'v') {
+      const x = Math.round(p(gl.x)) + 0.5;
+      ctx.moveTo(x, p(gl.y1)); ctx.lineTo(x, p(gl.y2));
+    } else {
+      const y = Math.round(p(gl.y)) + 0.5;
+      ctx.moveTo(p(gl.x1), y); ctx.lineTo(p(gl.x2), y);
+    }
+    ctx.stroke();
+  }
+
+  // Shared helper: draw text middle-aligned
+  const mt = (text, x, y, sz, color, fam, wt, align) => {
+    setFont(ctx, wt || 400, sz, fam || F.body, s);
+    ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, p(x), p(y));
+  };
+
+  // Draw EigenLabs "Powered by" lockup
+  const drawEigen = (labelCx, labelCy, labelSz, logoX, logoY, logoW, logoH) => {
+    const img = poweredByImg || null;
+    if (img) {
+      // Place the combined image occupying the full label+logo footprint
+      const imgTop = labelCy - labelSz * 0.9;
+      const imgH   = (logoY + logoH) - imgTop;
+      const imgW   = img.naturalWidth * (imgH * s / img.naturalHeight) / s;
+      ctx.drawImage(img, p(logoX), p(imgTop), p(imgW), p(imgH));
+    } else {
+      // Fallback: separate text + eigenImg
+      setFont(ctx, 400, labelSz, F.body, s);
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Powered by', p(labelCx), p(labelCy));
+      if (eigenImg) ctx.drawImage(eigenImg, p(logoX), p(logoY), p(logoW), p(logoH));
+    }
+  };
+
+  // Draw footer with muted URL
+  const drawFooter = (x, cy, sz) => {
+    const pre = 'Solve Yukon challenges at ';
+    const url = 'yukon.org';
+    setFont(ctx, 400, sz, F.body, s);
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillStyle = C.white;
+    ctx.fillText(pre, p(x), p(cy));
+    const preW = ctx.measureText(pre).width;
+    ctx.fillStyle = C.raffleUrl;
+    ctx.fillText(url, p(x) + preW, p(cy));
+  };
+
+  // Draw a winner table row
+  const drawRow = (rowX, rowY, rowW, rowH, accentW, rank, handle, prize, pts,
+                   rankX, nameX, prizeX, ptsX, textY, rankSz, dataSz) => {
+    ctx.fillStyle = C.winnerRow;
+    ctx.fillRect(p(rowX), p(rowY), p(rowW), p(rowH));
+    ctx.strokeStyle = C.winnerBorder;
+    ctx.lineWidth = 1.2 * s;
+    ctx.strokeRect(p(rowX) + 0.5, p(rowY) + 0.5, p(rowW) - 1, p(rowH) - 1);
+    ctx.fillStyle = C.lime;
+    ctx.fillRect(p(rowX), p(rowY), p(accentW), p(rowH));
+    // Rank
+    setFont(ctx, 500, rankSz, F.disp, s);
+    ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(rank, p(rankX), p(textY));
+    // Handle
+    setFont(ctx, 400, dataSz, F.body, s);
+    ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(handle, p(nameX), p(textY));
+    ctx.fillText(prize,  p(prizeX), p(textY));
+    ctx.fillText(pts,    p(ptsX),   p(textY));
+  };
+
+  // ── Wide layout ───────────────────────────────────────────────────────────
+  if (szId === 'wide') {
+    // Date
+    mt(wc.dateRange, 79, 53.5, 20, C.lime);
+    // Headline
+    mt('Yukon Weekly Winner', 71, 110, 64, C.lime, F.disp);
+    // EigenLabs
+    drawEigen(886, 94.67, 12, 852, 111.4, 140, 26);
+    // Table headers
+    setFont(ctx, 400, 15, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Rank',   p(111), p(207));
+    ctx.fillText('Name',   p(230), p(207));
+    ctx.fillText('Prize',  p(528), p(207));
+    ctx.fillText('Points', p(661), p(207));
+    // Winner rows
+    const wRows = [
+      { top: 229.9, textY: 268.5 },
+      { top: 325.2, textY: 364   },
+      { top: 415.4, textY: 454   },
+    ];
+    const ranks = ['# 1','# 2','# 3'];
+    for (let i = 0; i < 3; i++) {
+      const r = wRows[i];
+      drawRow(79, r.top, 682, 77.198, 17,
+        ranks[i], wc.winners[i]?.handle||'', wc.winners[i]?.prize||'', wc.winners[i]?.pts||'',
+        113, 230, 528, 661, r.textY, 20, 20);
+    }
+    // Raffle label (right column)
+    const rLabelSz = 16;
+    const rLH = rLabelSz * 1.3;
+    mt('Raffle winners',   856, 252.9 - rLH / 2, rLabelSz, C.white);
+    mt('$1,000 each',      856, 252.9 + rLH / 2, rLabelSz, C.white);
+    // Raffle headers
+    setFont(ctx, 400, 15, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillText('Name',   p(856),  p(330));
+    ctx.fillText('Points', p(1062), p(330));
+    // Raffle rows
+    const raffleStartY = 374.5;
+    const raffleSpacing = 46;
+    for (let i = 0; i < wc.raffle.length; i++) {
+      const ry = raffleStartY + i * raffleSpacing;
+      if (ry > 510) break; // clip to canvas
+      setFont(ctx, 400, 18, F.body, s);
+      ctx.fillStyle = C.white; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.fillText(wc.raffle[i].handle, p(856),  p(ry));
+      setFont(ctx, 400, 16, F.body, s);
+      ctx.fillText(wc.raffle[i].pts,    p(1062), p(ry));
+    }
+    // Footer
+    drawFooter(71, 577.6, 20);
+  }
+
+  // ── Square layout ─────────────────────────────────────────────────────────
+  else if (szId === 'square') {
+    // Date
+    mt(wc.dateRange, 94, 89.7, 28, C.lime);
+    // Headline (2 lines)
+    setFont(ctx, 400, 90, F.disp, s);
+    ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Yukon',         p(88), p(165));
+    ctx.fillText('Weekly Winner', p(88), p(255));
+    // EigenLabs
+    drawEigen(937.5, 266, 15.2, 894.3, 287.2, 177.7, 33);
+    // Table headers
+    setFont(ctx, 400, 22.6, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Rank',   p(136.3), p(435.6));
+    ctx.fillText('Name',   p(315.8), p(435.6));
+    ctx.fillText('Prize',  p(767),   p(435.6));
+    ctx.fillText('Points', p(966.1), p(435.6));
+    // Winner rows
+    const sqRows = [
+      { top: 470.3, textY: 528.5 },
+      { top: 613.9, textY: 672   },
+      { top: 750,   textY: 808   },
+    ];
+    for (let i = 0; i < 3; i++) {
+      const r = sqRows[i];
+      drawRow(88, r.top, 1029, 116.5, 25.65,
+        ['# 1','# 2','# 3'][i], wc.winners[i]?.handle||'', wc.winners[i]?.prize||'', wc.winners[i]?.pts||'',
+        139.3, 315.8, 765.5, 966.1, r.textY, 30.2, 30.2);
+    }
+    // Raffle section (bottom zone: y=923 to y=1083)
+    const sqRaffSz = 22;
+    const sqRaffLH = sqRaffSz * 1.3;
+    mt('Raffle winners', 93, 972.6, sqRaffSz, C.white);
+    mt('$1,000 each',    93, 1001.2, sqRaffSz, C.white);
+    // Show raffle as vertical table
+    setFont(ctx, 400, 20, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillText('Name',   p(343), p(952));
+    ctx.fillText('Points', p(600), p(952));
+    for (let i = 0; i < wc.raffle.length; i++) {
+      const ry = 980 + i * 32;
+      if (ry > 1070) break;
+      setFont(ctx, 400, 22, F.body, s);
+      ctx.fillStyle = C.white; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.fillText(wc.raffle[i].handle, p(343), p(ry));
+      setFont(ctx, 400, 20, F.body, s);
+      ctx.fillText(wc.raffle[i].pts,    p(600), p(ry));
+    }
+    // Footer
+    drawFooter(94, 1132.5, 24);
+  }
+
+  // ── Portrait layout ───────────────────────────────────────────────────────
+  else {
+    // Date
+    mt(wc.dateRange, 84, 169.5, 25.5, C.lime);
+    // Headline (2 lines)
+    setFont(ctx, 400, 82, F.disp, s);
+    ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Yukon',         p(79), p(262));
+    ctx.fillText('Weekly Winner', p(79), p(344));
+    // EigenLabs
+    drawEigen(853.2, 330.2, 13.9, 813.8, 349.6, 162, 30.1);
+    // Table headers
+    setFont(ctx, 400, 20.6, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Rank',   p(120.7), p(513.9));
+    ctx.fillText('Name',   p(284.4), p(513.9));
+    ctx.fillText('Prize',  p(695.7), p(513.9));
+    ctx.fillText('Points', p(877.3), p(513.9));
+    // Winner rows
+    const ptRows = [
+      { top: 545.5, textY: 598.6 },
+      { top: 676.5, textY: 729.6 },
+      { top: 800.6, textY: 853.7 },
+    ];
+    for (let i = 0; i < 3; i++) {
+      const r = ptRows[i];
+      drawRow(76.65, r.top, 938.2, 106.2, 23.4,
+        ['# 1','# 2','# 3'][i], wc.winners[i]?.handle||'', wc.winners[i]?.prize||'', wc.winners[i]?.pts||'',
+        123.4, 284.4, 695.7, 877.3, r.textY, 27.5, 27.5);
+    }
+    // Raffle section (bottom zone)
+    const ptRaffSz = 20;
+    mt('Raffle winners', 83, 1053.5, ptRaffSz, C.white);
+    mt('$1,000 each',    83, 1079.5, ptRaffSz, C.white);
+    setFont(ctx, 400, 18, F.body, s);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillText('Name',   p(311), p(1038));
+    ctx.fillText('Points', p(560), p(1038));
+    for (let i = 0; i < wc.raffle.length; i++) {
+      const ry = 1065 + i * 34;
+      if (ry > 1195) break;
+      setFont(ctx, 400, 21, F.body, s);
+      ctx.fillStyle = C.white; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.fillText(wc.raffle[i].handle, p(311), p(ry));
+      setFont(ctx, 400, 19, F.body, s);
+      ctx.fillText(wc.raffle[i].pts,    p(560), p(ry));
+    }
+    // Footer
+    drawFooter(84, 1257.3, 21.9);
+  }
+}
+
+// ── Preview helpers ───────────────────────────────────────────────────────────
+function previewScale(szId) {
+  const { w, h } = SIZES[szId];
+  const aw = Math.min(window.innerWidth - 340, 820);
+  const ah = window.innerHeight - 80;
+  return Math.min(aw / w, ah / h, 1);
+}
+
+function getLaunchContent() {
+  return {
+    name:   document.getElementById('fName').value.trim(),
+    sub:    document.getElementById('fSub').value.trim(),
+    collab: document.getElementById('fCollab').value.trim(),
+  };
+}
+
+function getWinnerContent() {
+  const raffle = [];
+  document.querySelectorAll('#raffleList .raffle-row').forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    raffle.push({ handle: inputs[0].value.trim(), pts: inputs[1].value.trim() });
+  });
+  return {
+    dateRange: document.getElementById('wDate').value.trim() || 'Aug 12 – Aug 20',
+    winners: [
+      { handle: document.getElementById('w1h').value.trim(), prize: document.getElementById('w1p').value.trim(), pts: document.getElementById('w1pts').value.trim() },
+      { handle: document.getElementById('w2h').value.trim(), prize: document.getElementById('w2p').value.trim(), pts: document.getElementById('w2pts').value.trim() },
+      { handle: document.getElementById('w3h').value.trim(), prize: document.getElementById('w3p').value.trim(), pts: document.getElementById('w3pts').value.trim() },
+    ],
+    raffle,
+  };
+}
+
+
+// ── Generate / Export ─────────────────────────────────────────────────────────
+function generate() {
+  if (!fontsReady) return;
+  const cv = document.getElementById('preview');
+  if (activeMode === 'launch') {
+    currentLayout = generateLayout(activeSz);
+    renderBanner(cv, currentLayout, getLaunchContent(), previewScale(activeSz));
+  } else {
+    currentLayout = null;
+    renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
+  }
+  document.getElementById('pmeta').textContent = SIZES[activeSz].label;
+}
+
+function rerender() {
+  if (!fontsReady) return;
+  const cv = document.getElementById('preview');
+  if (activeMode === 'launch') {
+    if (!currentLayout) return;
+    renderBanner(cv, currentLayout, getLaunchContent(), previewScale(activeSz));
+  } else {
+    renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
+  }
+}
+
+function dl(cv, name) {
+  const a = document.createElement('a');
+  a.download = name; a.href = cv.toDataURL('image/png'); a.click();
+}
+
+function exportCurrent() {
+  const cv = document.createElement('canvas');
+  if (activeMode === 'launch') {
+    if (!currentLayout) return;
+    renderBanner(cv, currentLayout, getLaunchContent(), EXPORT_SCALE);
+    dl(cv, `yukon-launch-${activeSz}.png`);
+  } else {
+    renderWinnerBanner(cv, activeSz, getWinnerContent(), EXPORT_SCALE);
+    dl(cv, `yukon-winner-${activeSz}.png`);
+  }
+}
+
+async function exportAll() {
+  for (const szId of ['wide', 'square', 'portrait']) {
+    const cv = document.createElement('canvas');
+    if (activeMode === 'launch') {
+      const layout = generateLayout(szId);
+      renderBanner(cv, layout, getLaunchContent(), EXPORT_SCALE);
+      dl(cv, `yukon-launch-${szId}.png`);
+    } else {
+      renderWinnerBanner(cv, szId, getWinnerContent(), EXPORT_SCALE);
+      dl(cv, `yukon-winner-${szId}.png`);
+    }
+    await new Promise(r => setTimeout(r, 80));
+  }
+}
+
+// ── UI controls ───────────────────────────────────────────────────────────────
+function setMode(mode) {
+  activeMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  document.getElementById('launchFields').style.display = mode === 'launch' ? 'flex' : 'none';
+  document.getElementById('winnerFields').style.display = mode === 'winner' ? 'flex' : 'none';
+  document.getElementById('btnGen').style.display = mode === 'launch' ? '' : 'none';
+  generate();
+}
+
+function setSize(szId) {
+  activeSz = szId;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('on', b.dataset.sz === szId));
+  generate();
+}
+
+// Logo upload
+document.getElementById('logoFile').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      collabImg = img;
+      const thumb = document.getElementById('logoThumb');
+      thumb.src = ev.target.result; thumb.style.display = 'block';
+      document.getElementById('logoLabel').textContent = file.name;
+      rerender();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+['fName','fSub','fCollab'].forEach(id => document.getElementById(id).addEventListener('input', rerender));
+['wDate','w1h','w1p','w1pts','w2h','w2p','w2pts','w3h','w3p','w3pts'].forEach(id =>
+  document.getElementById(id).addEventListener('input', rerender));
+
+window.addEventListener('resize', rerender);
+
+// Seed 3 raffle rows (fixed, non-removable)
+(function seedRaffle() {
+  const seeds = [
+    ['@ofou', '3,004'], ['@DawgZter', '3,104'], ['@exakoss', '299']
+  ];
+  const list = document.getElementById('raffleList');
+  seeds.forEach(([h, p]) => {
+    const row = document.createElement('div');
+    row.className = 'raffle-row';
+    row.innerHTML = `<input type="text" placeholder="@handle" value="${h}"><input type="text" placeholder="pts" value="${p}">`;
+    row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', rerender));
+    list.appendChild(row);
+  });
+})();
+
+// Load EigenLabs lockup (used in challenge launch banners)
+eigenImg = new Image();
+eigenImg.onerror = () => { eigenImg = null; rerender(); };
+eigenImg.onload  = () => rerender();
+eigenImg.src = encodeURI('../Yukon Social Tool/eigenlabs lockup.png');
+
+// Load "Powered by" combined lockup (used in winner banners)
+poweredByImg = new Image();
+poweredByImg.onerror = () => { poweredByImg = null; rerender(); };
+poweredByImg.onload  = () => rerender();
+poweredByImg.src = encodeURI('../Yukon Social Tool/Poweredby white.png');
+
+document.fonts.ready.then(() => {
+  fontsReady = true;
+  generate();
+});
+</script>
+</body>
+</html>
