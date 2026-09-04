@@ -569,34 +569,30 @@ function renderBanner(canvas, layout, content, s) {
     ctx.fillText('Powered by EigenLabs', sbStartX * s, (em.y + em.h / 2) * s);
   }
 
-  // Collaborator — label always shown; logo (if any) stacks below it, flush left
+  // Collaborator — label always shown; logo (if any) placed inline to its right
   const co = layout.co;
   {
-    const coMidY    = (co.y + co.h / 2) * s;
-    const coTxtX    = layout.hlText.x * s;
-    const coSz      = Math.max(18, TS.co);
-    const label     = content.collab || 'Collaborator';
+    const coMidY     = (co.y + co.h / 2) * s;
+    const coTxtX     = layout.hlText.x * s;
+    const coSz       = Math.max(18, TS.co);
+    const label      = content.collab || 'Collaborator';
     const labelAlpha = content.collab ? '0.65' : '0.45';
     setFont(ctx, 400, coSz, F.body, s);
     ctx.textAlign    = 'left';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle    = `rgba(25,6,141,${labelAlpha})`;
+    ctx.fillText(label, coTxtX, coMidY);
 
     if (collabImg) {
-      // Scale logo: height proportional to font, min width 100px (layout units)
+      // Logo sits inline after the label, vertically centred on the same baseline
+      const labelW = ctx.measureText(label).width;
+      const gap    = 12 * s;
       let lh = coSz * 1.7 * s;
       let lw = collabImg.naturalWidth * (lh / collabImg.naturalHeight);
       if (lw < 100 * s) { lw = 100 * s; lh = collabImg.naturalHeight * (lw / collabImg.naturalWidth); }
-
-      // Stack label + logo, vertically centred in tile
-      const gap      = 8 * s;
-      const blockH   = coSz * s + gap + lh;
-      const blockTop = coMidY - blockH / 2;
-
-      ctx.fillStyle = `rgba(25,6,141,${labelAlpha})`;
-      ctx.fillText(label, coTxtX, blockTop + coSz * s / 2);
-
-      // Logo tinted to #1800A6 via offscreen canvas
-      const ly = blockTop + coSz * s + gap;
+      const lx = coTxtX + labelW + gap;
+      const ly = coMidY - lh / 2;
+      // Tint logo to #1800A6 via offscreen canvas
       const tmp = document.createElement('canvas');
       tmp.width = Math.ceil(lw); tmp.height = Math.ceil(lh);
       const tc = tmp.getContext('2d');
@@ -604,10 +600,7 @@ function renderBanner(canvas, layout, content, s) {
       tc.globalCompositeOperation = 'source-in';
       tc.fillStyle = '#1800A6';
       tc.fillRect(0, 0, lw, lh);
-      ctx.drawImage(tmp, coTxtX, ly);
-    } else {
-      ctx.fillStyle = `rgba(25,6,141,${labelAlpha})`;
-      ctx.fillText(label, coTxtX, coMidY);
+      ctx.drawImage(tmp, lx, ly);
     }
   }
 
