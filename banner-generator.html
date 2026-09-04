@@ -537,6 +537,19 @@ function renderBanner(canvas, layout, content, s) {
   const ct = layout.ct;
   ctx.fillRect(ct.x * s, ct.y * s, ct.w * s, ct.h * s);
 
+  // Pre-measure headline text so vertical lines that cut through copy can be skipped
+  const hlT = layout.hlText;
+  const hlLine1 = content.name || 'Challenge';
+  const hlLine2 = 'is live';
+  {
+    let sz = TS.hl;
+    const minSz = Math.round(TS.hl * 0.70);
+    setFont(ctx, 400, sz, F.disp, s);
+    while (sz > minSz && ctx.measureText(hlLine1).width > hlT.maxW * s) { sz -= 2; setFont(ctx, 400, sz, F.disp, s); }
+  }
+  const hlTextExcludeX1 = hlT.x * s;
+  const hlTextExcludeX2 = hlT.x * s + Math.max(ctx.measureText(hlLine1).width, ctx.measureText(hlLine2).width) + 20 * s;
+
   // Grid lines — structural tile boundaries + interior accent lines
   ctx.strokeStyle = C.grid;
   ctx.lineWidth = 1.95 * s;
@@ -544,6 +557,8 @@ function renderBanner(canvas, layout, content, s) {
     const p = Math.round(gl.pos * s) + 0.5;
     ctx.beginPath();
     if (gl.type === 'v') {
+      // Skip vertical lines that cut through the headline/subhead copy zone
+      if (p >= hlTextExcludeX1 && p <= hlTextExcludeX2) continue;
       ctx.moveTo(p, gl.y1 != null ? gl.y1 * s : 0);
       ctx.lineTo(p, gl.y2 != null ? gl.y2 * s : canvas.height);
     } else {
@@ -613,10 +628,7 @@ function renderBanner(canvas, layout, content, s) {
     }
   }
 
-  // Headline — forced 2-line split: line 1 = challenge name, line 2 = "is live"
-  const hlT = layout.hlText;
-  const hlLine1 = content.name || 'Challenge';
-  const hlLine2 = 'is live';
+  // Headline — forced 2-line split (hlT/hlLine1/hlLine2 declared above for grid exclusion)
   // Reduce font size only if challenge name overflows section width
   let hlSz = TS.hl;
   const minHlSz = Math.round(TS.hl * 0.70);
