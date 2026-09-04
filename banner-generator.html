@@ -310,7 +310,7 @@ function generateLayout(szId) {
   // ── Headline section height ────────────────────────────────────────────────────
   const textBlockMinH = Math.ceil(
     PAD + TS.hl * 0.75
-    + TS.hl * 1.08 * 2
+    + TS.hl * 1.08
     + 32
     + TS.sh * 1.2 * 2
     + 24
@@ -408,7 +408,7 @@ function generateLayout(szId) {
   const coTileW = emInRight ? sbW : hlW;
 
   // ── Text positioning ───────────────────────────────────────────────────────────
-  const textEndFromBase = TS.hl * 1.08 * 2 + 32 + TS.sh * 1.2 * 2 + 24;
+  const textEndFromBase = TS.hl * 1.08 + 32 + TS.sh * 1.2 * 2 + 24;
   const hlMinBase = hlSect.y + PAD + TS.hl * 0.75;
   const hlMaxBase = Math.max(hlMinBase, hlSect.y + hlSect.h - textEndFromBase);
   const hlTextY   = rnd(hlMinBase, hlMaxBase);
@@ -669,7 +669,7 @@ function renderBanner(canvas, layout, content, s) {
       : wrapText(ctx, content.sub, maxShW).slice(0, 2);
 
     const shLH = TS.sh * 1.2 * s;
-    let shY = curY + 32 * s;
+    let shY = curY - hlLH + 32 * s;
     for (const line of shLines) {
       if (line.trim()) { ctx.fillText(clampLine(line), shT.x * s, shY); shY += shLH; }
     }
