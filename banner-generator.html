@@ -1026,8 +1026,12 @@ function rerender() {
 }
 
 function dl(cv, name) {
+  const out = document.createElement('canvas');
+  out.width  = Math.round(cv.width  / EXPORT_SCALE);
+  out.height = Math.round(cv.height / EXPORT_SCALE);
+  out.getContext('2d').drawImage(cv, 0, 0, out.width, out.height);
   const a = document.createElement('a');
-  a.download = name; a.href = cv.toDataURL('image/png'); a.click();
+  a.download = name; a.href = out.toDataURL('image/png'); a.click();
 }
 
 function exportCurrent() {
