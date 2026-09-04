@@ -224,7 +224,7 @@ const C = {
   winnerBorder: '#323dd8',
   lime:   '#DDFF55',
   white:  '#ffffff',
-  grid:   '#D2D5FF',
+  grid:   'rgba(210,213,255,0.8)',
   raffleUrl: 'rgba(177,164,255,0.64)',
 };
 const F = {
@@ -303,7 +303,7 @@ function generateLayout(szId) {
   const textBlockMinH = Math.ceil(
     PAD + TS.hl * 0.75
     + TS.hl * 1.08 * 2
-    + TS.sh * 1.15
+    + 30
     + TS.sh * 1.2 * 2
     + 24
   );
@@ -400,7 +400,7 @@ function generateLayout(szId) {
   const coTileW = emInRight ? sbW : hlW;
 
   // ── Text positioning ───────────────────────────────────────────────────────────
-  const textEndFromBase = TS.hl * 1.08 * 2 + TS.sh * 1.15 + TS.sh * 1.2 * 2 + 24;
+  const textEndFromBase = TS.hl * 1.08 * 2 + 30 + TS.sh * 1.2 * 2 + 24;
   const hlMinBase = hlSect.y + PAD + TS.hl * 0.75;
   const hlMaxBase = Math.max(hlMinBase, hlSect.y + hlSect.h - textEndFromBase);
   const hlTextY   = rnd(hlMinBase, hlMaxBase);
@@ -583,7 +583,15 @@ function renderBanner(canvas, layout, content, s) {
         const lh = coSz * 1.7 * s;
         const lw = collabImg.naturalWidth * (lh / collabImg.naturalHeight);
         const ly = coMidY + (content.collab ? coSz * 0.6 * s : -lh / 2);
-        ctx.drawImage(collabImg, coTxtX, ly, lw, lh);
+        // Tint logo to brand indigo #1800A6 regardless of source color
+        const tmp = document.createElement('canvas');
+        tmp.width = Math.ceil(lw); tmp.height = Math.ceil(lh);
+        const tc = tmp.getContext('2d');
+        tc.drawImage(collabImg, 0, 0, lw, lh);
+        tc.globalCompositeOperation = 'source-in';
+        tc.fillStyle = '#1800A6';
+        tc.fillRect(0, 0, lw, lh);
+        ctx.drawImage(tmp, coTxtX, ly);
       }
     } else {
       ctx.fillStyle = 'rgba(25,6,141,0.45)';
@@ -635,7 +643,7 @@ function renderBanner(canvas, layout, content, s) {
       : wrapText(ctx, content.sub, maxShW).slice(0, 2);
 
     const shLH = TS.sh * 1.2 * s;
-    let shY = curY + TS.sh * 1.15 * s;
+    let shY = curY + 30 * s;
     for (const line of shLines) {
       if (line.trim()) { ctx.fillText(clampLine(line), shT.x * s, shY); shY += shLH; }
     }
@@ -1082,13 +1090,13 @@ window.addEventListener('resize', rerender);
 eigenImg = new Image();
 eigenImg.onerror = () => { eigenImg = null; rerender(); };
 eigenImg.onload  = () => rerender();
-eigenImg.src = encodeURI('../Yukon Social Tool/eigenlabs lockup.png');
+eigenImg.src = encodeURI('Yukon Social Tool/eigenlabs lockup.png');
 
 // Load "Powered by" combined lockup (used in winner banners)
 poweredByImg = new Image();
 poweredByImg.onerror = () => { poweredByImg = null; rerender(); };
 poweredByImg.onload  = () => rerender();
-poweredByImg.src = encodeURI('../Yukon Social Tool/Poweredby white.png');
+poweredByImg.src = encodeURI('Yukon Social Tool/Poweredby white.png');
 
 document.fonts.ready.then(() => {
   fontsReady = true;
