@@ -206,22 +206,23 @@ input[type="file"] { display: none; }
   <!-- Carousel fields -->
   <div id="carouselFields" style="display:none;flex-direction:column;gap:14px;">
     <div style="font-size:11px;color:rgba(25,6,141,0.6);line-height:1.5;">
-      Generates <span id="carouselCount">—</span> from challenges.json.
+      <span id="carouselCount">—</span>
     </div>
     <div style="display:flex;align-items:center;gap:6px;">
       <button class="btn-out" onclick="carouselPrev()" style="padding:7px 14px;font-size:13px;">←</button>
       <span id="carouselFrameLabel" style="flex:1;text-align:center;font-size:10px;color:rgba(25,6,141,0.5);line-height:1.4;"></span>
       <button class="btn-out" onclick="carouselNext()" style="padding:7px 14px;font-size:13px;">→</button>
     </div>
+    <button class="btn-out" onclick="fetchChallenges()" style="font-size:10px;padding:6px 10px;">↻ Refresh from yukon.org</button>
   </div>
 
   <!-- One-Pager fields -->
   <div id="onepagerFields" style="display:none;flex-direction:column;gap:10px;">
     <div style="font-size:11px;color:rgba(25,6,141,0.6);line-height:1.5;">
-      Fixed 1200×627 frame. Loads active challenges from challenges.json.
-      Compact layout (name only) auto-activates at 8+ challenges.
+      Fixed 1200×627. Compact layout (name only) auto-activates at 8+ challenges.
     </div>
     <div id="onepagerInfo" style="font-size:10px;color:rgba(25,6,141,0.4);"></div>
+    <button class="btn-out" onclick="fetchChallenges()" style="font-size:10px;padding:6px 10px;">↻ Refresh from yukon.org</button>
   </div>
 
   <hr>
@@ -1382,6 +1383,7 @@ function setMode(mode) {
 
   if (mode === 'carousel') { carouselFrameIdx = 0; updateCarouselNav(); }
   if (mode === 'onepager') updateOnePagerInfo();
+  if (mode === 'carousel' || mode === 'onepager') fetchChallenges();
   generate();
 }
 
@@ -1397,17 +1399,21 @@ function updateCarouselNav() {
   const names  = ['Intro', ...challenges.map((c, i) => `${String(i + 1).padStart(2, '0')} ${c.name}`), 'End'];
   const lbl    = document.getElementById('carouselFrameLabel');
   const cnt    = document.getElementById('carouselCount');
-  if (lbl) lbl.textContent = `${names[carouselFrameIdx] || '—'} · ${carouselFrameIdx + 1} / ${total}`;
-  if (cnt) cnt.textContent = `${total} frames`;
+  if (lbl) lbl.textContent = challenges.length > 0
+    ? `${names[carouselFrameIdx] || '—'} · ${carouselFrameIdx + 1} / ${total}`
+    : '';
+  if (cnt && challenges.length > 0) {
+    cnt.style.cssText = '';
+    cnt.textContent = `${total} frames`;
+  }
 }
 
 function updateOnePagerInfo() {
   const el = document.getElementById('onepagerInfo');
-  if (!el) return;
+  if (!el || challenges.length === 0) return;
   const n = challenges.length;
-  el.textContent = n > 0
-    ? `${n} challenge${n !== 1 ? 's' : ''} loaded${n >= 8 ? ' · compact layout active' : ''}`
-    : 'No challenges loaded.';
+  el.style.cssText = '';
+  el.textContent = `${n} challenge${n !== 1 ? 's' : ''}${n >= 8 ? ' · compact layout active' : ''}`;
 }
 
 function setSize(szId) {
@@ -1479,16 +1485,40 @@ poweredByImg.onerror = () => { poweredByImg = null; rerender(); };
 poweredByImg.onload  = () => rerender();
 poweredByImg.src = encodeURI('Yukon Social Tool/Poweredby white.png');
 
-// Load challenge data
-fetch('challenges.json')
-  .then(r => r.json())
-  .then(data => {
+// Live challenge fetch from yukon.org via /api/challenges (Vercel serverless)
+function setChallengeStatus(msg, isError) {
+  const cnt = document.getElementById('carouselCount');
+  const inf = document.getElementById('onepagerInfo');
+  const style = isError ? 'color:#c0392b;font-weight:600;' : '';
+  if (cnt) { cnt.style.cssText = style; cnt.textContent = msg; }
+  if (inf) { inf.style.cssText = style; inf.textContent = msg; }
+}
+
+async function fetchChallenges() {
+  setChallengeStatus('Fetching from yukon.org…', false);
+  try {
+    const r = await fetch('/api/challenges', { cache: 'no-store' });
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new Error(body.error || `Server error ${r.status}`);
+    }
+    const data = await r.json();
     challenges = data.challenges || [];
+    if (challenges.length === 0) throw new Error('No active challenges returned');
     updateCarouselNav();
     updateOnePagerInfo();
     if (fontsReady && (activeMode === 'carousel' || activeMode === 'onepager')) rerender();
-  })
-  .catch(() => { challenges = []; });
+  } catch (err) {
+    challenges = [];
+    updateCarouselNav();
+    let msg = String(err.message || err);
+    // Help the user understand a local-dev fetch failure
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) {
+      msg = 'Cannot reach /api/challenges. Run "vercel dev" locally, or use the deployed version at yukon-banner-generator.vercel.app';
+    }
+    setChallengeStatus('Error: ' + msg, true);
+  }
+}
 
 document.fonts.ready.then(() => {
   fontsReady = true;
