@@ -1124,13 +1124,12 @@ function renderOnePager(canvas, challengeList, s) {
   ctx.fillStyle = '#1800a6';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const compact  = challengeList.length >= 8;
-  const COL_X    = [36, 322, 608, 895];
-  const CELL_W   = 271;
-  const ROW_Y    = compact ? [165, 300, 435] : [165, 376];
-  const CELL_H   = compact ? 121 : 197;
-  const BORDER   = 2;
-  const maxSlots = ROW_Y.length * 4 - 1; // last slot = EigenLabs
+  const COL_X  = [36, 322, 608, 895];
+  const ROW_Y  = [165, 376];
+  const CELL_W = 271;
+  const CELL_H = 197;
+  const BORDER = 2;
+  const MAX_CHALLENGES = 8; // 4 × 2 grid
 
   // Header grid lines
   ctx.strokeStyle = C.grid;
@@ -1139,12 +1138,12 @@ function renderOnePager(canvas, challengeList, s) {
   const gl = (x1, y1, x2, y2) => {
     ctx.beginPath(); ctx.moveTo(x1 * s, y1 * s); ctx.lineTo(x2 * s, y2 * s); ctx.stroke();
   };
-  gl(36,  0,   36,  165);   // left edge of Yukon cell
-  gl(194, 0,   194, 165);   // right edge of Yukon cell
-  gl(36,  120, 194, 120);   // bottom of Yukon cell
-  gl(0,   165, W,   165);   // header / grid separator
+  gl(36,  0,   36,  165);
+  gl(194, 0,   194, 165);
+  gl(36,  120, 194, 120);
+  gl(0,   165, W,   165);
 
-  // Right-side decorative lines (from Figma)
+  // Right-side decorative lines
   gl(1164, 157, 1164, 568);
   gl(985,  344, 985,  H);
   gl(985,  487, W,    487);
@@ -1154,59 +1153,53 @@ function renderOnePager(canvas, challengeList, s) {
   ctx.strokeStyle = '#323dd8';
   ctx.lineWidth   = BORDER * s;
 
-  let slot = 0;
-  for (let row = 0; row < ROW_Y.length; row++) {
-    for (let col = 0; col < 4; col++) {
-      const isEigen = (row === ROW_Y.length - 1 && col === 3);
-      const x = COL_X[col], y = ROW_Y[row];
+  const shown = Math.min(challengeList.length, MAX_CHALLENGES);
 
-      // Skip empty challenge slots — EigenLabs always draws
-      if (!isEigen && slot >= Math.min(challengeList.length, maxSlots)) continue;
+  for (let i = 0; i < shown; i++) {
+    const row = Math.floor(i / 4), col = i % 4;
+    const x = COL_X[col], y = ROW_Y[row];
+    const ch = challengeList[i];
+    const pad = 20;
 
-      ctx.strokeRect(
-        (x + BORDER / 2) * s, (y + BORDER / 2) * s,
-        (CELL_W - BORDER) * s, (CELL_H - BORDER) * s
-      );
+    // Cell border
+    ctx.strokeStyle = '#323dd8';
+    ctx.strokeRect(
+      (x + BORDER / 2) * s, (y + BORDER / 2) * s,
+      (CELL_W - BORDER) * s, (CELL_H - BORDER) * s
+    );
 
-      if (isEigen) {
-        if (poweredByImg) {
-          const lh = Math.round(CELL_H * 0.45 * s);
-          const lw = Math.round(poweredByImg.naturalWidth * (lh / poweredByImg.naturalHeight));
-          ctx.drawImage(poweredByImg, Math.round((x + CELL_W / 2) * s - lw / 2), Math.round((y + CELL_H / 2) * s - lh / 2), lw, lh);
-        }
-        continue;
-      }
-      const ch = challengeList[slot++];
-      const pad = 20;
+    // Name — top-aligned, wrapped, lime
+    const nsz = 28, nlh = nsz * 1.1;
+    setFont(ctx, 400, nsz, F.disp, s);
+    ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    const nameLines = wrapText(ctx, ch.name, (CELL_W - pad * 2) * s);
+    nameLines.forEach((ln, li) => {
+      ctx.fillText(ln, (x + pad) * s, (y + pad + li * nlh) * s);
+    });
 
-      if (compact) {
-        setFont(ctx, 400, 22, F.disp, s);
-        ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-        let nm = ch.name;
-        const mw = (CELL_W - pad * 2) * s;
-        while (nm.length > 4 && ctx.measureText(nm).width > mw) nm = nm.slice(0, -4) + '…';
-        ctx.fillText(nm, (x + pad) * s, (y + CELL_H / 2) * s);
-      } else {
-        const nsz = 28;
-        setFont(ctx, 400, nsz, F.disp, s);
-        ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-        let nm = ch.name;
-        const mw = (CELL_W - pad * 2) * s;
-        while (nm.length > 4 && ctx.measureText(nm).width > mw) nm = nm.slice(0, -4) + '…';
-        ctx.fillText(nm, (x + pad) * s, (y + pad + nsz * 0.72) * s);
-
-        const dsz = 20, dlh = dsz * 1.2;
-        setFont(ctx, 400, dsz, F.body, s);
-        ctx.fillStyle = '#b1a4ff';
-        const dLines = wrapText(ctx, ch.description, (CELL_W - pad * 2) * s).slice(0, 2);
-        const dBot   = y + CELL_H - pad;
-        const dFirst = dBot - (dLines.length - 1) * dlh;
-        dLines.forEach((ln, i) => ctx.fillText(ln, (x + pad) * s, (dFirst + i * dlh) * s));
-      }
-    }
+    // Description — bottom-aligned, max 2 lines, purple
+    const dsz = 20, dlh = dsz * 1.2;
+    setFont(ctx, 400, dsz, F.body, s);
+    ctx.fillStyle = '#b1a4ff'; ctx.textBaseline = 'alphabetic';
+    const dLines = wrapText(ctx, ch.description, (CELL_W - pad * 2) * s).slice(0, 2);
+    const dBot   = y + CELL_H - pad;
+    const dFirst = dBot - (dLines.length - 1) * dlh;
+    dLines.forEach((ln, li) => ctx.fillText(ln, (x + pad) * s, (dFirst + li * dlh) * s));
   }
 
-  // Yukon wordmark (top-left header cell)
+  // EigenLabs "Powered by" — in the last slot if a challenge doesn't occupy it
+  if (shown < MAX_CHALLENGES && poweredByImg) {
+    const eRow = Math.floor(shown / 4), eCol = shown % 4;
+    const ex = COL_X[eCol], ey = ROW_Y[eRow];
+    const lh = Math.round(CELL_H * 0.45 * s);
+    const lw = Math.round(poweredByImg.naturalWidth * (lh / poweredByImg.naturalHeight));
+    ctx.drawImage(poweredByImg,
+      Math.round((ex + CELL_W / 2) * s - lw / 2),
+      Math.round((ey + CELL_H / 2) * s - lh / 2),
+      lw, lh);
+  }
+
+  // Yukon wordmark
   setFont(ctx, 500, 28, F.disp, s);
   ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('Yukon', Math.round(55 * s), Math.round(60 * s));
