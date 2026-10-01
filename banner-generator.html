@@ -278,6 +278,7 @@ let activeSz         = 'wide';
 let collabImg        = null;
 let eigenImg         = null;
 let poweredByImg     = null;
+let eigenLabsSvg     = null;
 let currentLayout    = null;
 let fontsReady       = false;
 let challenges       = [];
@@ -1033,11 +1034,14 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
     seg(844, 907, 844, H);      // right V stub (bottom strip)
   }
 
-  // "Powered by EigenLabs" lockup — top-left zone (0–197)
-  if (poweredByImg) {
-    const lh = Math.round(78 * s);
-    const lw = Math.round(poweredByImg.naturalWidth * (lh / poweredByImg.naturalHeight));
-    ctx.drawImage(poweredByImg, Math.round(45 * s), Math.round(90 * s), lw, lh);
+  // "Powered by EigenLabs" lockup — positions from Figma 1966:4668/4669/4670
+  setFont(ctx, 400, 18, F.body, s);
+  ctx.fillStyle = C.white; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('Powered by', Math.round(96.94 * s), Math.round(103.1 * s));
+  if (eigenLabsSvg) {
+    ctx.drawImage(eigenLabsSvg,
+      Math.round(45.55 * s), Math.round(128.36 * s),
+      Math.round(211.421 * s), Math.round(39.291 * s));
   }
 
   if (type === 'intro') {
@@ -1470,11 +1474,17 @@ eigenImg.onerror = () => { eigenImg = null; rerender(); };
 eigenImg.onload  = () => rerender();
 eigenImg.src = encodeURI('Yukon Social Tool/eigenlabs lockup.png');
 
-// Load "Powered by" combined lockup (used in winner banners)
+// Load "Powered by" combined lockup (used in winner banners + one-pager)
 poweredByImg = new Image();
 poweredByImg.onerror = () => { poweredByImg = null; rerender(); };
 poweredByImg.onload  = () => rerender();
 poweredByImg.src = encodeURI('Yukon Social Tool/Poweredby white.png');
+
+// Load EigenLabs vector lockup SVG (used in carousel frames)
+eigenLabsSvg = new Image();
+eigenLabsSvg.onerror = () => { eigenLabsSvg = null; rerender(); };
+eigenLabsSvg.onload  = () => rerender();
+eigenLabsSvg.src = encodeURI('Yukon Social Tool/eigenlabs-lockup.svg');
 
 // Live challenge fetch from yukon.org via /api/challenges (Vercel serverless)
 function setChallengeStatus(msg, isError) {
