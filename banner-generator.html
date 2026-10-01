@@ -1138,16 +1138,10 @@ function renderOnePager(canvas, challengeList, s) {
   const gl = (x1, y1, x2, y2) => {
     ctx.beginPath(); ctx.moveTo(x1 * s, y1 * s); ctx.lineTo(x2 * s, y2 * s); ctx.stroke();
   };
-  gl(36,  0,   36,  165);
-  gl(194, 0,   194, 165);
-  gl(36,  120, 194, 120);
-  gl(0,   165, W,   165);
-
-  // Right-side decorative lines
-  gl(1164, 157, 1164, 568);
-  gl(985,  344, 985,  H);
-  gl(985,  487, W,    487);
-  gl(880,  573, W,    573);
+  gl(36,  0,   36,  165);   // Yukon cell left
+  gl(194, 0,   194, 165);   // Yukon cell right
+  gl(36,  120, 194, 120);   // Yukon cell bottom
+  gl(0,   165, W,   165);   // header / grid separator
 
   // Challenge cells
   ctx.strokeStyle = '#323dd8';
