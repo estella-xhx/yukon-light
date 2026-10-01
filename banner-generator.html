@@ -1132,16 +1132,15 @@ function renderOnePager(canvas, challengeList, s) {
   const MAX_CHALLENGES = 8; // 4 × 2 grid
 
   // Header grid lines
-  ctx.strokeStyle = C.grid;
-  ctx.lineWidth   = 1.95 * s;
+  ctx.strokeStyle = '#323dd8';
+  ctx.lineWidth   = 2 * s;
   ctx.lineCap     = 'square';
   const gl = (x1, y1, x2, y2) => {
     ctx.beginPath(); ctx.moveTo(x1 * s, y1 * s); ctx.lineTo(x2 * s, y2 * s); ctx.stroke();
   };
-  gl(36,  0,   36,  165);   // Yukon cell left
-  gl(194, 0,   194, 165);   // Yukon cell right
+  gl(36,  0,   36,  120);   // Yukon cell left
+  gl(194, 0,   194, 120);   // Yukon cell right
   gl(36,  120, 194, 120);   // Yukon cell bottom
-  gl(0,   165, W,   165);   // header / grid separator
 
   // Challenge cells
   ctx.strokeStyle = '#323dd8';
@@ -1193,10 +1192,10 @@ function renderOnePager(canvas, challengeList, s) {
       lw, lh);
   }
 
-  // Yukon wordmark
-  setFont(ctx, 500, 28, F.disp, s);
-  ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('Yukon', Math.round(55 * s), Math.round(60 * s));
+  // Yukon wordmark — centered in its cell (x: 36–194, y: 0–120)
+  setFont(ctx, 500, 32, F.disp, s);
+  ctx.fillStyle = C.lime; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('Yukon', Math.round(115 * s), Math.round(60 * s));
 
   // Headline
   setFont(ctx, 300, 56, F.disp, s);
