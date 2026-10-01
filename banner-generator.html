@@ -1289,10 +1289,12 @@ function rerender() {
   updatePreviewMeta();
 }
 
-function dl(cv, name) {
+// targetScale: final output scale relative to logical size (1 = native, 2 = 2×, etc.)
+function dl(cv, name, targetScale = 1) {
+  const ratio = EXPORT_SCALE / targetScale;
   const out = document.createElement('canvas');
-  out.width  = Math.round(cv.width  / EXPORT_SCALE);
-  out.height = Math.round(cv.height / EXPORT_SCALE);
+  out.width  = Math.round(cv.width  / ratio);
+  out.height = Math.round(cv.height / ratio);
   out.getContext('2d').drawImage(cv, 0, 0, out.width, out.height);
   const a = document.createElement('a');
   a.download = name; a.href = out.toDataURL('image/png'); a.click();
@@ -1312,10 +1314,10 @@ function exportCurrent() {
     const lbl = carouselFrameIdx === 0 ? '00-intro'
               : carouselFrameIdx > challenges.length ? `${String(challenges.length + 1).padStart(2, '0')}-end`
               : String(carouselFrameIdx).padStart(2, '0');
-    dl(cv, `yukon-carousel-${lbl}.png`);
+    dl(cv, `yukon-carousel-${lbl}.png`, 2);
   } else if (activeMode === 'onepager') {
     renderOnePager(cv, challenges, EXPORT_SCALE);
-    dl(cv, 'yukon-onepager.png');
+    dl(cv, 'yukon-onepager.png', 2);
   }
 }
 
@@ -1328,7 +1330,7 @@ async function exportAll() {
       const lbl = i === 0 ? '00-intro'
                 : i === total - 1 ? `${String(total - 1).padStart(2, '0')}-end`
                 : String(i).padStart(2, '0');
-      dl(cv, `yukon-carousel-${lbl}.png`);
+      dl(cv, `yukon-carousel-${lbl}.png`, 2);
       await new Promise(r => setTimeout(r, 80));
     }
     return;
@@ -1336,7 +1338,7 @@ async function exportAll() {
   if (activeMode === 'onepager') {
     const cv = document.createElement('canvas');
     renderOnePager(cv, challenges, EXPORT_SCALE);
-    dl(cv, 'yukon-onepager.png');
+    dl(cv, 'yukon-onepager.png', 2);
     return;
   }
   for (const szId of ['wide', 'square', 'portrait']) {
