@@ -1053,11 +1053,14 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
     carouselCTA(ctx, 51, 993.5, s);
 
   } else if (type === 'challenge') {
-    setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
-    drawTextBlock(ctx, challenge.name, 69, 431.5, 749, 90, 1.1, s);
+    // Replace hyphens with spaces so slug-style names wrap naturally
+    const displayName = challenge.name.replace(/-/g, ' ');
+    const { sz: nameSz } = fitText(ctx, displayName, 400, F.disp, 90, 52, 749, 2, s);
+    setFont(ctx, 400, nameSz, F.disp, s); ctx.fillStyle = C.lime;
+    drawTextBlock(ctx, displayName, 69, 431.5, 749, nameSz, 1.1, s);
 
-    setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
-    drawTextBlock(ctx, challenge.description, 69, 656, 622, 36, 1.4, s);
+    setFont(ctx, 400, 33, F.body, s); ctx.fillStyle = C.white;
+    drawTextBlock(ctx, challenge.description, 69, 656, 622, 33, 1.4, s);
 
     // Challenge counter top-right (x=844–1080, y=0–197)
     setFont(ctx, 400, 24, F.disp, s);
