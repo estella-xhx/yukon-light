@@ -1,0 +1,32 @@
+{
+  "challenges": [
+    {
+      "name": "ECDSA.fail",
+      "description": "Quantum circuits vs. elliptic curve signatures"
+    },
+    {
+      "name": "Quantum Safe Bitcoin",
+      "description": "GPU-optimized quantum-safe Bitcoin"
+    },
+    {
+      "name": "MLX.fast",
+      "description": "Model inference on Apple Silicon"
+    },
+    {
+      "name": "Snark.fast",
+      "description": "Post-quantum proofs for Ethereum"
+    },
+    {
+      "name": "precompile.fast",
+      "description": "Cheaper onchain cryptography"
+    },
+    {
+      "name": "Heesch",
+      "description": "Unsolved tiling problem since 2022"
+    },
+    {
+      "name": "The Proximity Prize",
+      "description": "Soundness bounds toward 128-bit"
+    }
+  ]
+}

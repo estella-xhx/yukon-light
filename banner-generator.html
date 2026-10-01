@@ -38,12 +38,12 @@ body {
 .brand-name { font-family: 'Zalando Sans SemiExpanded', sans-serif; font-size: 17px; font-weight: 400; line-height: 1.1; color: #19068d; }
 .brand-sub { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(25,6,141,0.38); }
 hr { border: none; border-top: 1px solid rgba(25,6,141,0.1); }
-.mode-tabs { display: flex; gap: 0; }
+.mode-tabs { display: grid; grid-template-columns: 1fr 1fr; }
 .mode-btn {
-  flex: 1; padding: 8px 6px; border: 1px solid rgba(25,6,141,0.22); background: #fff;
+  padding: 8px 5px; border: 1px solid rgba(25,6,141,0.22); background: #fff;
   color: rgba(25,6,141,0.5); font-family: 'ABC Repro Variable', sans-serif;
   font-size: 10px; letter-spacing: 0.03em; cursor: pointer; text-align: center;
-  margin-right: -1px;
+  margin-right: -1px; margin-bottom: -1px;
 }
 .mode-btn.on { border-color: #19068d; background: #19068d; color: #fff; z-index: 1; position: relative; }
 .field { display: flex; flex-direction: column; gap: 5px; }
@@ -129,8 +129,10 @@ input[type="file"] { display: none; }
   </div>
   <hr>
   <div class="mode-tabs">
-    <button class="mode-btn on" data-mode="launch" onclick="setMode('launch')">Challenge Launch</button>
-    <button class="mode-btn" data-mode="winner" onclick="setMode('winner')">Weekly Winner</button>
+    <button class="mode-btn on" data-mode="launch"    onclick="setMode('launch')">Challenge Launch</button>
+    <button class="mode-btn"    data-mode="winner"   onclick="setMode('winner')">Weekly Winner</button>
+    <button class="mode-btn"    data-mode="carousel" onclick="setMode('carousel')">Carousel</button>
+    <button class="mode-btn"    data-mode="onepager" onclick="setMode('onepager')">One-Pager</button>
   </div>
   <hr>
 
@@ -201,8 +203,29 @@ input[type="file"] { display: none; }
     </div>
   </div>
 
+  <!-- Carousel fields -->
+  <div id="carouselFields" style="display:none;flex-direction:column;gap:14px;">
+    <div style="font-size:11px;color:rgba(25,6,141,0.6);line-height:1.5;">
+      Generates <span id="carouselCount">—</span> from challenges.json.
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="btn-out" onclick="carouselPrev()" style="padding:7px 14px;font-size:13px;">←</button>
+      <span id="carouselFrameLabel" style="flex:1;text-align:center;font-size:10px;color:rgba(25,6,141,0.5);line-height:1.4;"></span>
+      <button class="btn-out" onclick="carouselNext()" style="padding:7px 14px;font-size:13px;">→</button>
+    </div>
+  </div>
+
+  <!-- One-Pager fields -->
+  <div id="onepagerFields" style="display:none;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:rgba(25,6,141,0.6);line-height:1.5;">
+      Fixed 1200×627 frame. Loads active challenges from challenges.json.
+      Compact layout (name only) auto-activates at 8+ challenges.
+    </div>
+    <div id="onepagerInfo" style="font-size:10px;color:rgba(25,6,141,0.4);"></div>
+  </div>
+
   <hr>
-  <div class="field">
+  <div class="field" id="sizeField">
     <label>Output size</label>
     <div class="size-row">
       <button class="size-btn on" data-sz="wide"     onclick="setSize('wide')">1200×627<br>Wide</button>
@@ -249,13 +272,15 @@ const SIZES = {
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let activeMode    = 'launch';
-let activeSz      = 'wide';
-let collabImg     = null;
-let eigenImg      = null;
-let poweredByImg  = null;
-let currentLayout = null;
-let fontsReady    = false;
+let activeMode       = 'launch';
+let activeSz         = 'wide';
+let collabImg        = null;
+let eigenImg         = null;
+let poweredByImg     = null;
+let currentLayout    = null;
+let fontsReady       = false;
+let challenges       = [];
+let carouselFrameIdx = 0;
 
 // ── Randomisation helpers ─────────────────────────────────────────────────────
 const rnd    = (a, b) => a + Math.random() * (b - a);
@@ -512,6 +537,16 @@ function fitText(ctx, text, wt, fam, maxSz, minSz, maxW, maxLines, s) {
   }
   setFont(ctx, wt, minSz, fam, s);
   return { sz: minSz, lines: wrapText(ctx, text, maxW * s) };
+}
+
+// Draw wrapped text lines centered vertically around (leftX, centerY)
+function drawTextBlock(ctx, text, leftX, centerY, maxW, fontSize, lineHeight, s) {
+  const lines = wrapText(ctx, text, maxW * s);
+  const lhPx  = fontSize * lineHeight * s;
+  let y = centerY * s - (lines.length * lhPx) / 2 + lhPx / 2;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign    = 'left';
+  for (const line of lines) { ctx.fillText(line, leftX * s, y); y += lhPx; }
 }
 
 // ── Challenge Launch renderer ─────────────────────────────────────────────────
@@ -966,9 +1001,224 @@ function renderWinnerBanner(canvas, szId, wc, s) {
   }
 }
 
+// ── Carousel renderer (1080×1080) ────────────────────────────────────────────
+function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
+  const W = 1080, H = 1080;
+  canvas.width  = Math.round(W * s);
+  canvas.height = Math.round(H * s);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#1800a6';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid lines
+  const seg = (x1, y1, x2, y2) => {
+    ctx.beginPath();
+    ctx.moveTo(Math.round(x1 * s) + 0.5, Math.round(y1 * s) + 0.5);
+    ctx.lineTo(Math.round(x2 * s) + 0.5, Math.round(y2 * s) + 0.5);
+    ctx.stroke();
+  };
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth   = 1.95 * s;
+  ctx.lineCap     = 'square';
+
+  seg(0, 197, W, 197);  // H-line top of main zone
+  seg(0, 907, W, 907);  // H-line bottom of main zone
+
+  if (type === 'challenge') {
+    seg(844, 0, 844, H);        // full-height V divider
+  } else {
+    seg(296, 0,   296, 907);    // left V (intro/end, top half)
+    seg(844, 907, 844, H);      // right V stub (bottom strip)
+  }
+
+  // "Powered by EigenLabs" lockup — top-left zone (0–197)
+  if (poweredByImg) {
+    const lh = Math.round(78 * s);
+    const lw = Math.round(poweredByImg.naturalWidth * (lh / poweredByImg.naturalHeight));
+    ctx.drawImage(poweredByImg, Math.round(45 * s), Math.round(90 * s), lw, lh);
+  }
+
+  if (type === 'intro') {
+    setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
+    drawTextBlock(ctx, 'The problems worth solving, open to everyone.', 368, 462.5, 712, 90, 1.1, s);
+
+    setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
+    drawTextBlock(ctx, 'Open problems. Verified progress. Bring your agents.', 368, 767, 537, 36, 1.4, s);
+
+    setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Yukon', Math.round(905 * s), Math.round(993.5 * s));
+    carouselCTA(ctx, 51, 993.5, s);
+
+  } else if (type === 'challenge') {
+    setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
+    drawTextBlock(ctx, challenge.name, 69, 431.5, 749, 90, 1.1, s);
+
+    setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
+    drawTextBlock(ctx, challenge.description, 69, 656, 622, 36, 1.4, s);
+
+    // Challenge counter top-right (x=844–1080, y=0–197)
+    setFont(ctx, 400, 24, F.disp, s);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    const cl = 875, l1y = (109 + 24 * 0.72), l2y = l1y + 24 * 1.4;
+    ctx.fillStyle = C.lime;
+    ctx.fillText('Challenge', cl * s, l1y * s);
+    const n = String(frameNum).padStart(2, '0');
+    const t = String(total).padStart(2, '0');
+    ctx.fillStyle = C.white;
+    ctx.fillText(n, cl * s, l2y * s);
+    const nw = ctx.measureText(n).width;
+    ctx.fillText(' / ', cl * s + nw, l2y * s);
+    ctx.fillStyle = C.lime;
+    ctx.fillText(t, cl * s + nw + ctx.measureText(' / ').width, l2y * s);
+
+    setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Yukon', Math.round(69 * s), Math.round(993.5 * s));
+
+  } else { // end
+    setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
+    drawTextBlock(ctx, 'Every result verified before it counts.', 368, 473, 651, 90, 1.05, s);
+
+    setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
+    drawTextBlock(ctx, 'Bring your hardest problem, or bring your agents to one of ours.', 368, 750, 598, 36, 1.2, s);
+
+    setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Yukon', Math.round(905 * s), Math.round(993.5 * s));
+    carouselCTA(ctx, 51, 993.5, s);
+  }
+}
+
+function carouselCTA(ctx, lx, cy, s) {
+  const sz = 28, lhPx = sz * 1.1 * s;
+  setFont(ctx, 400, sz, F.body, s);
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  ctx.fillStyle = C.white;
+  ctx.fillText('Solve Yukon',  lx * s, cy * s - lhPx / 2);
+  const pre = 'challenges at ';
+  ctx.fillText(pre, lx * s, cy * s + lhPx / 2);
+  ctx.fillStyle = '#b1a4ff';
+  ctx.fillText('yukon.org', lx * s + ctx.measureText(pre).width, cy * s + lhPx / 2);
+}
+
+function renderCarouselFromIdx(canvas, idx, s) {
+  const total = challenges.length;
+  if (idx === 0)           renderCarouselFrame(canvas, 'intro',     null,                 0,   total, s);
+  else if (idx > total)    renderCarouselFrame(canvas, 'end',       null,                 0,   total, s);
+  else                     renderCarouselFrame(canvas, 'challenge', challenges[idx - 1], idx, total, s);
+}
+
+// ── One-Pager renderer (1200×627) ────────────────────────────────────────────
+function renderOnePager(canvas, challengeList, s) {
+  const W = 1200, H = 627;
+  canvas.width  = Math.round(W * s);
+  canvas.height = Math.round(H * s);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#1800a6';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const compact  = challengeList.length >= 8;
+  const COL_X    = [36, 322, 608, 895];
+  const CELL_W   = 271;
+  const ROW_Y    = compact ? [165, 300, 435] : [165, 376];
+  const CELL_H   = compact ? 121 : 197;
+  const BORDER   = 2;
+  const maxSlots = ROW_Y.length * 4 - 1; // last slot = EigenLabs
+
+  // Header grid lines
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth   = 1.95 * s;
+  ctx.lineCap     = 'square';
+  const gl = (x1, y1, x2, y2) => {
+    ctx.beginPath(); ctx.moveTo(x1 * s, y1 * s); ctx.lineTo(x2 * s, y2 * s); ctx.stroke();
+  };
+  gl(36,  0,   36,  165);   // left edge of Yukon cell
+  gl(194, 0,   194, 165);   // right edge of Yukon cell
+  gl(36,  120, 194, 120);   // bottom of Yukon cell
+  gl(0,   165, W,   165);   // header / grid separator
+
+  // Right-side decorative lines (from Figma)
+  gl(1164, 157, 1164, 568);
+  gl(985,  344, 985,  H);
+  gl(985,  487, W,    487);
+  gl(880,  573, W,    573);
+
+  // Challenge cells
+  ctx.strokeStyle = '#323dd8';
+  ctx.lineWidth   = BORDER * s;
+
+  let slot = 0;
+  for (let row = 0; row < ROW_Y.length; row++) {
+    for (let col = 0; col < 4; col++) {
+      const isEigen = (row === ROW_Y.length - 1 && col === 3);
+      const x = COL_X[col], y = ROW_Y[row];
+
+      // Skip empty challenge slots — EigenLabs always draws
+      if (!isEigen && slot >= Math.min(challengeList.length, maxSlots)) continue;
+
+      ctx.strokeRect(
+        (x + BORDER / 2) * s, (y + BORDER / 2) * s,
+        (CELL_W - BORDER) * s, (CELL_H - BORDER) * s
+      );
+
+      if (isEigen) {
+        if (poweredByImg) {
+          const lh = Math.round(CELL_H * 0.45 * s);
+          const lw = Math.round(poweredByImg.naturalWidth * (lh / poweredByImg.naturalHeight));
+          ctx.drawImage(poweredByImg, Math.round((x + CELL_W / 2) * s - lw / 2), Math.round((y + CELL_H / 2) * s - lh / 2), lw, lh);
+        }
+        continue;
+      }
+      const ch = challengeList[slot++];
+      const pad = 20;
+
+      if (compact) {
+        setFont(ctx, 400, 22, F.disp, s);
+        ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        let nm = ch.name;
+        const mw = (CELL_W - pad * 2) * s;
+        while (nm.length > 4 && ctx.measureText(nm).width > mw) nm = nm.slice(0, -4) + '…';
+        ctx.fillText(nm, (x + pad) * s, (y + CELL_H / 2) * s);
+      } else {
+        const nsz = 28;
+        setFont(ctx, 400, nsz, F.disp, s);
+        ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        let nm = ch.name;
+        const mw = (CELL_W - pad * 2) * s;
+        while (nm.length > 4 && ctx.measureText(nm).width > mw) nm = nm.slice(0, -4) + '…';
+        ctx.fillText(nm, (x + pad) * s, (y + pad + nsz * 0.72) * s);
+
+        const dsz = 20, dlh = dsz * 1.2;
+        setFont(ctx, 400, dsz, F.body, s);
+        ctx.fillStyle = '#b1a4ff';
+        const dLines = wrapText(ctx, ch.description, (CELL_W - pad * 2) * s).slice(0, 2);
+        const dBot   = y + CELL_H - pad;
+        const dFirst = dBot - (dLines.length - 1) * dlh;
+        dLines.forEach((ln, i) => ctx.fillText(ln, (x + pad) * s, (dFirst + i * dlh) * s));
+      }
+    }
+  }
+
+  // Yukon wordmark (top-left header cell)
+  setFont(ctx, 500, 28, F.disp, s);
+  ctx.fillStyle = C.lime; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('Yukon', Math.round(55 * s), Math.round(60 * s));
+
+  // Headline
+  setFont(ctx, 300, 56, F.disp, s);
+  ctx.fillStyle = C.white; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('The frontier, open to everyone.', Math.round(238 * s), Math.round(74 * s));
+}
+
 // ── Preview helpers ───────────────────────────────────────────────────────────
 function previewScale(szId) {
   const { w, h } = SIZES[szId];
+  return previewScaleDim(w, h);
+}
+function previewScaleDim(w, h) {
   const aw = Math.min(window.innerWidth - 340, 820);
   const ah = window.innerHeight - 80;
   return Math.min(aw / w, ah / h, 1);
@@ -1001,17 +1251,36 @@ function getWinnerContent() {
 
 
 // ── Generate / Export ─────────────────────────────────────────────────────────
+function updatePreviewMeta() {
+  const el = document.getElementById('pmeta');
+  if (activeMode === 'carousel') {
+    const total = challenges.length + 2;
+    el.textContent = `1080 × 1080 · Carousel · Frame ${carouselFrameIdx + 1} of ${total}`;
+  } else if (activeMode === 'onepager') {
+    const n = challenges.length;
+    el.textContent = `1200 × 627 · One-Pager · ${n} challenge${n !== 1 ? 's' : ''}${n >= 8 ? ' (compact)' : ''}`;
+  } else {
+    el.textContent = SIZES[activeSz].label;
+  }
+}
+
 function generate() {
   if (!fontsReady) return;
   const cv = document.getElementById('preview');
   if (activeMode === 'launch') {
     currentLayout = generateLayout(activeSz);
     renderBanner(cv, currentLayout, getLaunchContent(), previewScale(activeSz));
-  } else {
+  } else if (activeMode === 'winner') {
     currentLayout = null;
     renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
+  } else if (activeMode === 'carousel') {
+    currentLayout = null;
+    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, 1080));
+  } else if (activeMode === 'onepager') {
+    currentLayout = null;
+    renderOnePager(cv, challenges, previewScaleDim(1200, 627));
   }
-  document.getElementById('pmeta').textContent = SIZES[activeSz].label;
+  updatePreviewMeta();
 }
 
 function rerender() {
@@ -1020,9 +1289,14 @@ function rerender() {
   if (activeMode === 'launch') {
     if (!currentLayout) return;
     renderBanner(cv, currentLayout, getLaunchContent(), previewScale(activeSz));
-  } else {
+  } else if (activeMode === 'winner') {
     renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
+  } else if (activeMode === 'carousel') {
+    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, 1080));
+  } else if (activeMode === 'onepager') {
+    renderOnePager(cv, challenges, previewScaleDim(1200, 627));
   }
+  updatePreviewMeta();
 }
 
 function dl(cv, name) {
@@ -1040,13 +1314,41 @@ function exportCurrent() {
     if (!currentLayout) return;
     renderBanner(cv, currentLayout, getLaunchContent(), EXPORT_SCALE);
     dl(cv, `yukon-launch-${activeSz}.png`);
-  } else {
+  } else if (activeMode === 'winner') {
     renderWinnerBanner(cv, activeSz, getWinnerContent(), EXPORT_SCALE);
     dl(cv, `yukon-winner-${activeSz}.png`);
+  } else if (activeMode === 'carousel') {
+    renderCarouselFromIdx(cv, carouselFrameIdx, EXPORT_SCALE);
+    const lbl = carouselFrameIdx === 0 ? '00-intro'
+              : carouselFrameIdx > challenges.length ? `${String(challenges.length + 1).padStart(2, '0')}-end`
+              : String(carouselFrameIdx).padStart(2, '0');
+    dl(cv, `yukon-carousel-${lbl}.png`);
+  } else if (activeMode === 'onepager') {
+    renderOnePager(cv, challenges, EXPORT_SCALE);
+    dl(cv, 'yukon-onepager.png');
   }
 }
 
 async function exportAll() {
+  if (activeMode === 'carousel') {
+    const total = challenges.length + 2;
+    for (let i = 0; i < total; i++) {
+      const cv = document.createElement('canvas');
+      renderCarouselFromIdx(cv, i, EXPORT_SCALE);
+      const lbl = i === 0 ? '00-intro'
+                : i === total - 1 ? `${String(total - 1).padStart(2, '0')}-end`
+                : String(i).padStart(2, '0');
+      dl(cv, `yukon-carousel-${lbl}.png`);
+      await new Promise(r => setTimeout(r, 80));
+    }
+    return;
+  }
+  if (activeMode === 'onepager') {
+    const cv = document.createElement('canvas');
+    renderOnePager(cv, challenges, EXPORT_SCALE);
+    dl(cv, 'yukon-onepager.png');
+    return;
+  }
   for (const szId of ['wide', 'square', 'portrait']) {
     const cv = document.createElement('canvas');
     if (activeMode === 'launch') {
@@ -1065,10 +1367,47 @@ async function exportAll() {
 function setMode(mode) {
   activeMode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
-  document.getElementById('launchFields').style.display = mode === 'launch' ? 'flex' : 'none';
-  document.getElementById('winnerFields').style.display = mode === 'winner' ? 'flex' : 'none';
-  document.getElementById('btnGen').style.display = mode === 'launch' ? '' : 'none';
+  document.getElementById('launchFields').style.display   = mode === 'launch'   ? 'flex' : 'none';
+  document.getElementById('winnerFields').style.display   = mode === 'winner'   ? 'flex' : 'none';
+  document.getElementById('carouselFields').style.display = mode === 'carousel' ? 'flex' : 'none';
+  document.getElementById('onepagerFields').style.display = mode === 'onepager' ? 'flex' : 'none';
+
+  const hasSizes = mode === 'launch' || mode === 'winner';
+  document.getElementById('sizeField').style.display = hasSizes ? '' : 'none';
+  document.getElementById('btnGen').style.display    = mode === 'launch' ? '' : 'none';
+
+  document.querySelector('.btn-all').textContent =
+    mode === 'carousel' ? 'EXPORT ALL FRAMES' :
+    mode === 'onepager' ? 'EXPORT ONE-PAGER'  : 'EXPORT ALL 3 SIZES';
+
+  if (mode === 'carousel') { carouselFrameIdx = 0; updateCarouselNav(); }
+  if (mode === 'onepager') updateOnePagerInfo();
   generate();
+}
+
+function carouselPrev() {
+  if (carouselFrameIdx > 0) { carouselFrameIdx--; updateCarouselNav(); rerender(); }
+}
+function carouselNext() {
+  if (carouselFrameIdx < challenges.length + 1) { carouselFrameIdx++; updateCarouselNav(); rerender(); }
+}
+
+function updateCarouselNav() {
+  const total  = challenges.length + 2;
+  const names  = ['Intro', ...challenges.map((c, i) => `${String(i + 1).padStart(2, '0')} ${c.name}`), 'End'];
+  const lbl    = document.getElementById('carouselFrameLabel');
+  const cnt    = document.getElementById('carouselCount');
+  if (lbl) lbl.textContent = `${names[carouselFrameIdx] || '—'} · ${carouselFrameIdx + 1} / ${total}`;
+  if (cnt) cnt.textContent = `${total} frames`;
+}
+
+function updateOnePagerInfo() {
+  const el = document.getElementById('onepagerInfo');
+  if (!el) return;
+  const n = challenges.length;
+  el.textContent = n > 0
+    ? `${n} challenge${n !== 1 ? 's' : ''} loaded${n >= 8 ? ' · compact layout active' : ''}`
+    : 'No challenges loaded.';
 }
 
 function setSize(szId) {
@@ -1139,6 +1478,17 @@ poweredByImg = new Image();
 poweredByImg.onerror = () => { poweredByImg = null; rerender(); };
 poweredByImg.onload  = () => rerender();
 poweredByImg.src = encodeURI('Yukon Social Tool/Poweredby white.png');
+
+// Load challenge data
+fetch('challenges.json')
+  .then(r => r.json())
+  .then(data => {
+    challenges = data.challenges || [];
+    updateCarouselNav();
+    updateOnePagerInfo();
+    if (fontsReady && (activeMode === 'carousel' || activeMode === 'onepager')) rerender();
+  })
+  .catch(() => { challenges = []; });
 
 document.fonts.ready.then(() => {
   fontsReady = true;
