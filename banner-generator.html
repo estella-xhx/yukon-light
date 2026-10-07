@@ -208,6 +208,13 @@ input[type="file"] { display: none; }
     <div style="font-size:11px;color:rgba(25,6,141,0.6);line-height:1.5;">
       <span id="carouselCount">—</span>
     </div>
+    <div>
+      <label style="font-size:10px;color:rgba(25,6,141,0.5);display:block;margin-bottom:5px;">Size</label>
+      <div style="display:flex;gap:0;">
+        <button id="cszSquare"   class="size-btn on"  onclick="setCarouselSize('square')"   style="flex:1;font-size:10px;padding:7px 4px;">1080×1080<br>Square</button>
+        <button id="cszPortrait" class="size-btn"     onclick="setCarouselSize('portrait')" style="flex:1;font-size:10px;padding:7px 4px;">1080×1350<br>Portrait</button>
+      </div>
+    </div>
     <div style="display:flex;align-items:center;gap:6px;">
       <button class="btn-out" onclick="carouselPrev()" style="padding:7px 14px;font-size:13px;">←</button>
       <span id="carouselFrameLabel" style="flex:1;text-align:center;font-size:10px;color:rgba(25,6,141,0.5);line-height:1.4;"></span>
@@ -283,6 +290,7 @@ let currentLayout    = null;
 let fontsReady       = false;
 let challenges       = [];
 let carouselFrameIdx = 0;
+let carouselSize     = 'square'; // 'square' (1080×1080) | 'portrait' (1080×1350)
 
 // ── Randomisation helpers ─────────────────────────────────────────────────────
 const rnd    = (a, b) => a + Math.random() * (b - a);
@@ -1003,9 +1011,19 @@ function renderWinnerBanner(canvas, szId, wc, s) {
   }
 }
 
-// ── Carousel renderer (1080×1080) ────────────────────────────────────────────
-function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
-  const W = 1080, H = 1080;
+// ── Carousel renderer ─────────────────────────────────────────────────────────
+// size: 'square' (1080×1080) | 'portrait' (1080×1350)
+function renderCarouselFrame(canvas, type, challenge, frameNum, total, s, size) {
+  const W        = 1080;
+  const H        = size === 'portrait' ? 1350 : 1080;
+  const TOP_ZONE = 197;
+  const BOT_H    = 173;
+  const MAIN_BOT = H - BOT_H;
+  const MAIN_H   = MAIN_BOT - TOP_ZONE;
+  const SC       = MAIN_H / 710;
+  const my = (y) => TOP_ZONE + (y - TOP_ZONE) * SC;
+  const footCY   = MAIN_BOT + BOT_H / 2;
+
   canvas.width  = Math.round(W * s);
   canvas.height = Math.round(H * s);
   const ctx = canvas.getContext('2d');
@@ -1013,7 +1031,6 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
   ctx.fillStyle = '#1800a6';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Grid lines
   const seg = (x1, y1, x2, y2) => {
     ctx.beginPath();
     ctx.moveTo(Math.round(x1 * s) + 0.5, Math.round(y1 * s) + 0.5);
@@ -1024,17 +1041,16 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
   ctx.lineWidth   = 1.95 * s;
   ctx.lineCap     = 'square';
 
-  seg(0, 197, W, 197);  // H-line top of main zone
-  seg(0, 907, W, 907);  // H-line bottom of main zone
+  seg(0, TOP_ZONE, W, TOP_ZONE);
+  seg(0, MAIN_BOT, W, MAIN_BOT);
 
   if (type === 'challenge') {
-    seg(844, 0, 844, H);        // full-height V divider
+    seg(844, 0, 844, H);
   } else {
-    seg(296, 0,   296, 907);    // left V (intro/end, top half)
-    seg(844, 907, 844, H);      // right V stub (bottom strip)
+    seg(296, 0,        296, MAIN_BOT);
+    seg(844, MAIN_BOT, 844, H);
   }
 
-  // "Powered by EigenLabs" lockup — positions from Figma 1966:4668/4669/4670
   setFont(ctx, 400, 18, F.body, s);
   ctx.fillStyle = C.white; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('Powered by', Math.round(96.94 * s), Math.round(103.1 * s));
@@ -1046,27 +1062,25 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
 
   if (type === 'intro') {
     setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
-    drawTextBlock(ctx, 'The problems worth solving, open to everyone.', 368, 462.5, 712, 90, 1.1, s);
+    drawTextBlock(ctx, 'The problems worth solving, open to everyone.', 368, my(462.5), 712, 90, 1.1, s);
 
     setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
-    drawTextBlock(ctx, 'Open problems. Verified progress. Bring your agents.', 368, 767, 537, 36, 1.4, s);
+    drawTextBlock(ctx, 'Open problems. Verified progress. Bring your agents.', 368, my(767), 537, 36, 1.4, s);
 
     setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('Yukon', Math.round(905 * s), Math.round(993.5 * s));
-    carouselCTA(ctx, 51, 993.5, s);
+    ctx.fillText('Yukon', Math.round(905 * s), Math.round(footCY * s));
+    carouselCTA(ctx, 51, footCY, s);
 
   } else if (type === 'challenge') {
-    // Replace hyphens with spaces so slug-style names wrap naturally
     const displayName = challenge.name.replace(/-/g, ' ');
     const { sz: nameSz } = fitText(ctx, displayName, 400, F.disp, 90, 52, 749, 2, s);
     setFont(ctx, 400, nameSz, F.disp, s); ctx.fillStyle = C.lime;
-    drawTextBlock(ctx, displayName, 69, 431.5, 749, nameSz, 1.1, s);
+    drawTextBlock(ctx, displayName, 69, my(431.5), 749, nameSz, 1.1, s);
 
     setFont(ctx, 400, 33, F.body, s); ctx.fillStyle = C.white;
-    drawTextBlock(ctx, challenge.description, 69, 656, 622, 33, 1.4, s);
+    drawTextBlock(ctx, challenge.description, 69, my(656), 622, 33, 1.4, s);
 
-    // Challenge counter top-right (x=844–1080, y=0–197)
     setFont(ctx, 400, 24, F.disp, s);
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     const cl = 875, l1y = (109 + 24 * 0.72), l2y = l1y + 24 * 1.4;
@@ -1083,19 +1097,19 @@ function renderCarouselFrame(canvas, type, challenge, frameNum, total, s) {
 
     setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('Yukon', Math.round(69 * s), Math.round(993.5 * s));
+    ctx.fillText('Yukon', Math.round(69 * s), Math.round(footCY * s));
 
-  } else { // end
+  } else {
     setFont(ctx, 400, 90, F.disp, s); ctx.fillStyle = C.lime;
-    drawTextBlock(ctx, 'Every result verified before it counts.', 368, 473, 651, 90, 1.05, s);
+    drawTextBlock(ctx, 'Every result verified before it counts.', 368, my(473), 651, 90, 1.05, s);
 
     setFont(ctx, 400, 36, F.body, s); ctx.fillStyle = C.white;
-    drawTextBlock(ctx, 'Bring your hardest problem, or bring your agents to one of ours.', 368, 750, 598, 36, 1.2, s);
+    drawTextBlock(ctx, 'Bring your hardest problem, or bring your agents to one of ours.', 368, my(750), 598, 36, 1.2, s);
 
     setFont(ctx, 500, 36, F.disp, s); ctx.fillStyle = C.lime;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('Yukon', Math.round(905 * s), Math.round(993.5 * s));
-    carouselCTA(ctx, 51, 993.5, s);
+    ctx.fillText('Yukon', Math.round(905 * s), Math.round(footCY * s));
+    carouselCTA(ctx, 51, footCY, s);
   }
 }
 
@@ -1104,18 +1118,26 @@ function carouselCTA(ctx, lx, cy, s) {
   setFont(ctx, 400, sz, F.body, s);
   ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
   ctx.fillStyle = C.white;
-  ctx.fillText('Solve Yukon',  lx * s, cy * s - lhPx / 2);
+  ctx.fillText('Solve Yukon', lx * s, cy * s - lhPx / 2);
   const pre = 'challenges at ';
   ctx.fillText(pre, lx * s, cy * s + lhPx / 2);
   ctx.fillStyle = '#b1a4ff';
   ctx.fillText('yukon.org', lx * s + ctx.measureText(pre).width, cy * s + lhPx / 2);
 }
 
-function renderCarouselFromIdx(canvas, idx, s) {
+function renderCarouselFromIdx(canvas, idx, s, size) {
+  size = size || carouselSize;
   const total = challenges.length;
-  if (idx === 0)           renderCarouselFrame(canvas, 'intro',     null,                 0,   total, s);
-  else if (idx > total)    renderCarouselFrame(canvas, 'end',       null,                 0,   total, s);
-  else                     renderCarouselFrame(canvas, 'challenge', challenges[idx - 1], idx, total, s);
+  if (idx === 0)        renderCarouselFrame(canvas, 'intro',     null,                 0,   total, s, size);
+  else if (idx > total) renderCarouselFrame(canvas, 'end',       null,                 0,   total, s, size);
+  else                  renderCarouselFrame(canvas, 'challenge', challenges[idx - 1], idx, total, s, size);
+}
+
+function setCarouselSize(sz) {
+  carouselSize = sz;
+  document.getElementById('cszSquare').classList.toggle('on',   sz === 'square');
+  document.getElementById('cszPortrait').classList.toggle('on', sz === 'portrait');
+  rerender();
 }
 
 // ── One-Pager renderer (1200×627) ────────────────────────────────────────────
@@ -1249,7 +1271,8 @@ function updatePreviewMeta() {
   const el = document.getElementById('pmeta');
   if (activeMode === 'carousel') {
     const total = challenges.length + 2;
-    el.textContent = `1080 × 1080 · Carousel · Frame ${carouselFrameIdx + 1} of ${total}`;
+    const dim = carouselSize === 'portrait' ? '1080 × 1350' : '1080 × 1080';
+    el.textContent = `${dim} · Carousel · Frame ${carouselFrameIdx + 1} of ${total}`;
   } else if (activeMode === 'onepager') {
     const n = challenges.length;
     el.textContent = `1200 × 627 · One-Pager · ${n} challenge${n !== 1 ? 's' : ''}${n >= 8 ? ' (compact)' : ''}`;
@@ -1269,7 +1292,7 @@ function generate() {
     renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
   } else if (activeMode === 'carousel') {
     currentLayout = null;
-    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, 1080));
+    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, carouselSize === 'portrait' ? 1350 : 1080));
   } else if (activeMode === 'onepager') {
     currentLayout = null;
     renderOnePager(cv, challenges, previewScaleDim(1200, 627));
@@ -1286,7 +1309,7 @@ function rerender() {
   } else if (activeMode === 'winner') {
     renderWinnerBanner(cv, activeSz, getWinnerContent(), previewScale(activeSz));
   } else if (activeMode === 'carousel') {
-    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, 1080));
+    renderCarouselFromIdx(cv, carouselFrameIdx, previewScaleDim(1080, carouselSize === 'portrait' ? 1350 : 1080));
   } else if (activeMode === 'onepager') {
     renderOnePager(cv, challenges, previewScaleDim(1200, 627));
   }
@@ -1318,7 +1341,8 @@ function exportCurrent() {
     const lbl = carouselFrameIdx === 0 ? '00-intro'
               : carouselFrameIdx > challenges.length ? `${String(challenges.length + 1).padStart(2, '0')}-end`
               : String(carouselFrameIdx).padStart(2, '0');
-    dl(cv, `yukon-carousel-${lbl}.png`, 2);
+    const szTag = carouselSize === 'portrait' ? '-portrait' : '';
+    dl(cv, `yukon-carousel${szTag}-${lbl}.png`, 2);
   } else if (activeMode === 'onepager') {
     renderOnePager(cv, challenges, EXPORT_SCALE);
     dl(cv, 'yukon-onepager.png', 2);
@@ -1328,13 +1352,14 @@ function exportCurrent() {
 async function exportAll() {
   if (activeMode === 'carousel') {
     const total = challenges.length + 2;
+    const szTag = carouselSize === 'portrait' ? '-portrait' : '';
     for (let i = 0; i < total; i++) {
       const cv = document.createElement('canvas');
       renderCarouselFromIdx(cv, i, EXPORT_SCALE);
       const lbl = i === 0 ? '00-intro'
                 : i === total - 1 ? `${String(total - 1).padStart(2, '0')}-end`
                 : String(i).padStart(2, '0');
-      dl(cv, `yukon-carousel-${lbl}.png`, 2);
+      dl(cv, `yukon-carousel${szTag}-${lbl}.png`, 2);
       await new Promise(r => setTimeout(r, 80));
     }
     return;
